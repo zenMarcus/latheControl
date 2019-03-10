@@ -1,5 +1,5 @@
-#ifndef HEADER_FILE
-#define HEADER_FILE
+#ifndef pinSetup_h
+#define pinSetup_h
 // arduino pin definition and init.
 //SPI pin
 
@@ -39,7 +39,7 @@
   #define SS_z 48
   #define SS_x 46
 
-  //slave select for encoder SSI interface
+  //slave select for encoder SSI? interface
   #define CsnX 47 //(not use but needs init)
   #define CsnZ 49 //(not use but needs init)
   #define CsnSpn 50 //(not use but needs init)
@@ -48,38 +48,8 @@
 //Switches
   #define RUN_PIN 23
   #define DIR_PIN 25
-  #define eStop 27
+  #define eStop 27  
 
-void pinSetup(){
-  pinMode(nFault, INPUT);
-  pinMode(PWRGD, INPUT);
-  pinMode(RUN, INPUT_PULLUP);
-  pinMode(DIR, INPUT_PULLUP);
-  pinMode(eStop, INPUT_PULLUP);
-  pinMode(PWMx, INPUT);
-  pinMode(PWMz, INPUT);
-  pinMode(SpnDFLAG, INPUT);
-  pinMode(SpnLFLAG, INPUT);
-  pinMode(SCS, OUTPUT);
-  pinMode(ENGate, OUTPUT);
-  pinMode(SS_spin, OUTPUT);
-  pinMode(SS_x, OUTPUT);
-  pinMode(SS_z, OUTPUT);
-  pinMode(CsnX, OUTPUT);
-  pinMode(CsnZ, OUTPUT);
-  pinMode(CsnMot, OUTPUT);
-  pinMode(CsnSpn, OUTPUT);
-  pinMode(6, OUTPUT);
-  pinMode(7, OUTPUT);
-  pinMode(8, OUTPUT);
-
-  //testPins
-  pinMode(9,OUTPUT);
-  pinMode(13,OUTPUT);
-  pinMode(12,OUTPUT);
-  pinMode(11,OUTPUT);
-
-
-}
+void pinSetup();
 
 #endif
