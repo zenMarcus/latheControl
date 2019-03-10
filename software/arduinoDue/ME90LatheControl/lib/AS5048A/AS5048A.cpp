@@ -73,7 +73,7 @@ int AS5048A::getRotation(){
 	int rotation;
 
 	data = AS5048A::getRawRotation();
-	rotation = ((int)data - (int)position) & 0x3FFF; //my version
+	rotation = ((int)data - (int)position) & 0x3FFF; //takes the rotation from the currently set zero
 	//if(rotation > 8191) rotation = -((0x3FFF)-rotation); //more than -180
 	//if(rotation < -0x1FFF) rotation = rotation+0x3FFF;
 
