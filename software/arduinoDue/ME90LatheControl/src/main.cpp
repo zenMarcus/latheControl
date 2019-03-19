@@ -13,6 +13,7 @@ using namespace arduino_due::pwm_lib;
 
 #define MOTOR_LIMIT_TEMP 75 //in deg C
 #define ADC_RES 12
+#define poles 14
 
 //define SPI confings for all devices
 //SPISettings LS73663(1000000, MSBFIRST, SPI_MODE1);//rnd vals
@@ -21,30 +22,37 @@ using namespace arduino_due::pwm_lib;
 AS5048A motorEncoder(CsnMot);
 
 RunningAverage setSpeedAverage(10); //set speed to be sampled as running Average
+RunningAverage inputCurrentAverage(30);
+RunningAverage potAvergage(10);
 RunningAverage TH1Average(5); //set speed to be sampled as running Average
+
 
 //uC  
 bool toggle = 0; //for timing measure
-int ADCsamples = pow(2,ADC_RES);
+int ADCsamples = 4096;//pow(2,ADC_RES);
 const int ISenseRange = 40; // -20A - 0A - 20A mapped to 0.00V - 1.65V -3.33V
 const int ISenseOffset = 20;// to shift the ADC value as above
 // PIDs
-double reqSpindleTorque, phaseCurrent, vectorAmplitude;
-double tKp = 0.00,
+double reqSpindleTorque, quadratureCurrent, directCurrent,vectorAmplitude, inputCurrent;
+double tKp = 1.0,
        tKi = 0.00,
-       tKd = 0.00;
+       tKd = 0.000;
 
 double reqMotorVelocity, velSetpoint, curMotorVelocity;
 double vKp = 0.00, 
        vKi = 0.00, 
        vKd = 0.00;
+
+volatile uint16_t curMotorPosition = 0;
+volatile uint16_t prevMotorPosition = 0;
+
 //PID torquePID(input(Isens 0.0 : 15.0 A) , output (0.0 : 1.0 ), setpoint (0.0A - 5.0A))
-PID torquePID(&phaseCurrent, &vectorAmplitude, &reqSpindleTorque, tKp, tKi, tKd, DIRECT);
+PID torquePID(&inputCurrent, &vectorAmplitude, &reqSpindleTorque, tKp, tKi, tKd, DIRECT);
 
 //PID velPID(input(velocity RPM) , output (0.0A - 5.0A), setpoint (-200.0 : 1450.0 RPM))
 PID velocityPID(&curMotorVelocity, &reqSpindleTorque, &reqMotorVelocity, vKp, vKi, vKd, DIRECT);
-int FOCFreq = 2351; //349th prime
-int torquePIDFreq = 1409; //223th prime
+int FOCFreq = 3201; //349th prime
+int torquePIDFreq = 409; //223th prime
 int velocityPIDFreq = 283; //61th prime
 
 
@@ -61,8 +69,8 @@ int pwmPeriod = 0; //will be calculates in setup in hundredths of uS
 int phaseOffsetB = sineTableSize / 3;
 int phaseOffsetC = (sineTableSize / 3) * 2;
 const int motorEncResolution = 16384; //14bit encoder
-const double maxMotorCurrent = 5.0;
-const int maxMotorVelocity = 1450; //in RPM
+const double maxVectorAmplitude = 0.1;
+const int maxMotorVelocity = 50; //1450; //in RPM
 uint16_t FOCoffset = 0;
 word test = 0;
 
@@ -81,63 +89,105 @@ pwm<pwm_pin::PWML5_PC22> inH_C; // PWM_CH5 on pin 8 on arduino DUE
 
 volatile bool l,h,c; //for ISR test only remove when validated
 // put back in TC3_Handler after testing
-volatile int FOCIndex;
-volatile uint16_t magAngle;
 
+String logTable[1024];
+int logState = 0;
+int ilog = 0;
 
 void TC3_Handler()   // FOC ISR
 {
   TC_GetStatus(TC1, 0); // TC_GetStatus to "accept" interrupt parameters (TCn, channel)
-  //digitalWrite(13, l = !l); //debug line for timing
+  digitalWrite(13, HIGH);//l = !l); //debug line for timing
+  uint16_t FOCIndex;
+  uint16_t magAngle;
+  
+  
   rotorAngle = float(motorEncoder.getRotation());
-  magAngle = (int(rotorAngle) * 14) & (motorEncResolution - 1);
+
+  //calculate magnetic angle
+  magAngle = (int(rotorAngle) * poles) & (motorEncResolution - 1);
+  //scale it range 0-sineTableSize
+  magAngle = (magAngle / float(motorEncResolution)) * (sineTableSize-1);
 
   //calculate FOCIndex
-  
-  // set the vector according to the required direction (rotorAngle +- PI/2)
+  //set the vector according to the required direction (rotorAngle +- PI/2)
   
   if (vectorAmplitude < 0){
-    FOCIndex = (((rotorAngle / motorEncResolution) * (sineTableSize-1) )) * 14 + (sineTableSize/4);
+    FOCIndex = magAngle + (sineTableSize/4);
   }
   else{
-    FOCIndex = (((rotorAngle / motorEncResolution) * (sineTableSize-1) )) * 14 - (sineTableSize/4);
+    //FOCIndex = (((rotorAngle / motorEncResolution) * (sineTableSize-1) ) * poles) - (sineTableSize/4);
+    FOCIndex = magAngle - (sineTableSize/4);
   }
-  
+
+  //...takes about 70us to get here
   //set appropriate duty cycle
-  inH_A.set_duty(pwmSineTable[ FOCIndex & (sineTableSize-1) ] * (vectorAmplitude));
-  inH_B.set_duty(pwmSineTable[ (FOCIndex + phaseOffsetB) & (sineTableSize-1)] * (vectorAmplitude) );
-  inH_C.set_duty(pwmSineTable[ (FOCIndex + phaseOffsetC) & (sineTableSize-1)] * (vectorAmplitude) );
+  inH_A.set_duty(pwmSineTable[ FOCIndex & (sineTableSize-1) ] * abs(vectorAmplitude));
+  inH_B.set_duty(pwmSineTable[ (FOCIndex + phaseOffsetB) & (sineTableSize-1)] * abs(vectorAmplitude) );
+  inH_C.set_duty(pwmSineTable[ (FOCIndex + phaseOffsetC) & (sineTableSize-1)] * abs(vectorAmplitude) );
+  
+  prevMotorPosition = curMotorPosition;
+ //Measuring currents and scaling them
+  float IphaseA = (float(analogRead(IsenA) / float(ADCsamples-1)) * ISenseRange ) - ISenseOffset;
+  float IphaseB = (float(analogRead(IsenB) / float(ADCsamples-1)) * ISenseRange ) - ISenseOffset;
+  //float IphaseC = -1*(IphaseA + IphaseB); 
+  float IphaseC = (float(analogRead(IsenC) / float(ADCsamples-1)) * ISenseRange ) - ISenseOffset;
+
+  // Clarke transform (power invariant)
+  float X = (2*IphaseA - IphaseB - IphaseC)*0.4082;
+  float Y = (IphaseB - IphaseC)*0.707106;
+  //Z = (IphaseA + IphaseB + IphaseC)*(1/sqrt(3)); //redundant
+
+  //float X = IphaseA * 1.5;
+  //float Y = IphaseB * 0.866025403784439 - IphaseC * 0.866025403784439;
+
+  // Park transform
+
+  float theta = (1-(float(magAngle) / sineTableSize)) * 6.283185307179586;
+  float co = cos(theta);
+  float si = sin(theta);
+
+
+  directCurrent = co*X + si*Y;
+  quadratureCurrent = co*Y - si*X;
+
+  if((ilog < 1024) && (logState == 1)){
+    logTable[ilog] = String(ilog) + "," + String(theta) + "," + IphaseA + "," + IphaseB + "," +  IphaseC + "," + X + "," + Y + "," + directCurrent + "," + quadratureCurrent;
+    ilog++;
+  }
+  if((ilog >= 1023) && (logState == 1)){ 
+    logState = 2;
+  }
+  digitalWrite(13, LOW);
+
 }
 
 void TC4_Handler() // torque PID ISR
 {
   TC_GetStatus(TC1, 1);
-  //digitalWrite(12, h = !h);
-  //Measuring currents and scaling them
-  float IphaseA = ((analogRead(IsenA) / float(ADCsamples)) * ISenseRange ) - ISenseOffset;
-  float IphaseB = ((analogRead(IsenB) / float(ADCsamples)) * ISenseRange ) - ISenseOffset;
-  float IphaseC = ((analogRead(IsenC) / float(ADCsamples)) * ISenseRange ) - ISenseOffset;
-
-  /*  vector sum of the phase currents
-  CurrentSinComp = IphaseA * sin(0) + IphaseB * sin(2/3PI) + IphaseC * sin(4/3PI);
-  CurrentCosComp = IphaseA * cos(0) + IphaseB * cos(2/3PI) + IphaseC * cos(4/3PI);
-  numerically expressed : */
-  float CurrentSinComp = IphaseB * (0.866) + IphaseC * (-0.866);
-  float CurrentCosComp = IphaseA + IphaseB * (-0.5) + IphaseC * (-0.5);
-  // then calculate the magnitude
-  phaseCurrent = sqrt ( sq(CurrentSinComp) * sq(CurrentCosComp) );
+  digitalWrite(12, HIGH);//h = !h);
+  
+  digitalWrite(12, LOW);
 
   //torquePID.Compute();
-
 }
 
 void TC5_Handler() // velocity PID ISR
 {
   TC_GetStatus(TC1, 2);
+  curMotorPosition = int(rotorAngle);
 
   //digitalWrite(11, c = !c);
-  vectorAmplitude = (float(analogRead(A8))/1024) / 4; //direct control for a quick test
-  //curMotorVelocity = (curMotorPosition - prevMotorPosition) / (1/velocityPIDFreq);
+  potAvergage.addValue( (float(analogRead(A8))/4096) * 0.25 );
+  vectorAmplitude = potAvergage.getAverage(); //direct control for a quick test
+
+  //calculate motor velocity in steps / s
+  curMotorVelocity = (curMotorPosition - prevMotorPosition) * velocityPIDFreq;
+    if(abs(curMotorVelocity) < abs(motorEncResolution/2)*velocityPIDFreq){
+      setSpeedAverage.addValue(curMotorVelocity);
+    }
+
+  prevMotorPosition = rotorAngle;
   //velocityPID.Compute();
 }
 
@@ -154,8 +204,8 @@ bool alignRotor(){
     //ramp up the appropriate duty cycle to line up one magnetic pole
     while(vectorRamp <= 0.25){
         inH_A.set_duty(pwmSineTable[ 0 ] * float(vectorRamp));
-        inH_B.set_duty(pwmSineTable[ ( phaseOffsetB & (sineTableSize-1))] * float(vectorRamp));
-        inH_C.set_duty(pwmSineTable[ ( phaseOffsetC & (sineTableSize-1))] * float(vectorRamp));
+        inH_B.set_duty(pwmSineTable[ (0 + phaseOffsetB) & (sineTableSize-1)] * float(vectorRamp));
+        inH_C.set_duty(pwmSineTable[ (0 + phaseOffsetC) & (sineTableSize-1)] * float(vectorRamp));
         vectorRamp += 0.0001;
         //Serial.println(rotation); // degbug line
         delay(1);
@@ -271,15 +321,11 @@ void setup() {
 
   Serial.println("motor encoder initialized");
 
-  torquePID.SetMode(MANUAL);
+  torquePID.SetMode(AUTOMATIC);
   torquePID.SetTunings(tKp, tKi, tKd);
-  torquePID.SetOutputLimits(-maxMotorCurrent, maxMotorCurrent);
-  torquePID.SetSampleTime(0);
-
-  velocityPID.SetMode(MANUAL);
-  velocityPID.SetTunings(vKp, vKi, vKd);
-  velocityPID.SetOutputLimits(-maxMotorVelocity , maxMotorVelocity);
-  velocityPID.SetSampleTime(0);
+  torquePID.SetOutputLimits(-maxVectorAmplitude, maxVectorAmplitude);
+  torquePID.SetSampleTime(1);
+  //PID lib is in millisecond. will need fixing
 
   /*
   if (digitalRead(RUN_PIN == 0)){ // reads eStopStatus only if the RUN is disabled
@@ -305,12 +351,17 @@ void setup() {
   fillSineTable(); //now use the period to fill the FOC phase lookup table
 
   //call this every time for the moment, but will need to be called upon request
+  delay(10);
   rotorAligned = alignRotor();
   
   //configure the timer and external interrupts
   configInterrupts(FOCFreq, torquePIDFreq, velocityPIDFreq);
 
   //Serial.println(FOCoffset); //debug line
+  torquePID.SetMode(MANUAL);
+  torquePID.SetTunings(tKp, tKi, tKd);
+  torquePID.SetOutputLimits(-maxVectorAmplitude, maxVectorAmplitude);
+  torquePID.SetSampleTime(1);
 
 }
 
@@ -320,25 +371,30 @@ void loop() {
   //digitalWrite(9,toggle);
   //updateReqMotorVelocity(); //call this around 10Hz ??
 
-  //Serial.print(rotorAngle);
+  if((millis() > 4000) && (logState ==0)){
+    Serial.println("start log");
+    logState = 1;
+  }
+
+  if(logState == 2){
+    logState = 3;
+    for (int t=0; t<1024; t++){
+      Serial.println(logTable[t]);
+    }
+    
+  }
+  
+
+  //Serial.print(quadratureCurrent);
   //Serial.print(',');
+  //Serial.print(directCurrent);
+  //Serial.print(',');
+  //Serial.print(inputCurrent);
 
-  Serial.print(vectorAmplitude); //test the the pot before making a mess
-  Serial.print(',');
+  //Serial.print(60*(setSpeedAverage.getAverage() / motorEncResolution));
+  //Serial.print('\n');
 
-  //Serial.print(FOCIndex & (sineTableSize-1));
-  //Serial.print(",");
-  Serial.print(phaseOffsetB);
-  //Serial.print(",");
-  //Serial.println(magAngle);
-  //Serial.print(",");
-  //Serial.print('\t');
-
-  //Serial.print(magAngle); //test the the pot before making a mess
-  Serial.print('\n');
-
-  //Serial.println(1);
-  delay(10);
+  delay(5);
 
   //Serial.println(reqMotorVelocity);
 

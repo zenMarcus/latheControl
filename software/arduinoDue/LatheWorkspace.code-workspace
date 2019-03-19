@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"name": "me90LatheControl",
+			"path": "me90LatheControl"
+		}
+	],
+	"settings": {
+		"terminal.integrated.env.osx": {
+			"PATH": "/Users/marcus/.platformio/penv/bin:/Users/marcus/.platformio/penv:/Library/Frameworks/Python.framework/Versions/3.6/bin:/Library/Frameworks/Python.framework/Versions/2.7/bin:/Library/Frameworks/Python.framework/Versions/Current/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin",
+			"PLATFORMIO_CALLER": "vscode"
+		},
+		"files.associations": {
+			"cmath": "cpp"
+		}
+	}
+}
