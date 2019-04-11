@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 
 
-df = pd.read_csv('data/06log.csv', index_col=0)
+df = pd.read_csv('data/09log.csv', index_col=0)
 
 df['sinTheta'] = np.sin(-df.theta)
 df['cosTheta'] = np.cos(-df.theta)
@@ -39,5 +39,5 @@ ax3.plot(df.index, df.Iq)
 ax3.set(xlabel='sample', ylabel='value', title='Park')
 ax3.grid()
 ax3.legend()
-
+plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=0.1)
 plt.show()

@@ -1,7 +1,7 @@
-#include <Arduino.h>
 #include "pinSetup.h"
+#include <Arduino.h>
 
-void pinSetup(){
+void pinSetup() {
   pinMode(nFault, INPUT);
   pinMode(PWRGD, INPUT);
   pinMode(RUN_PIN, INPUT_PULLUP);
@@ -15,7 +15,7 @@ void pinSetup(){
   digitalWrite(SCS, HIGH); // SPI slave sel. should be kept high till used
 
   pinMode(ENGate, OUTPUT);
-  digitalWrite (ENGate, 0);
+  digitalWrite(ENGate, 0);
 
   pinMode(SS_spin, OUTPUT);
   digitalWrite(SS_spin, HIGH);
@@ -32,21 +32,21 @@ void pinSetup(){
   digitalWrite(CsnX, HIGH);
 
   pinMode(CsnZ, OUTPUT);
-  //digitalWrite(CsnZ, HIGH); not sure on SSI
+  // digitalWrite(CsnZ, HIGH); not sure on SSI
 
   pinMode(CsnMot, OUTPUT);
-  //digitalWrite(CsnMot, HIGH);
-  
+  // digitalWrite(CsnMot, HIGH);
+
   pinMode(CsnSpn, OUTPUT);
-  //digitalWrite(CsnSpn, HIGH);
+  // digitalWrite(CsnSpn, HIGH);
 
   pinMode(6, OUTPUT); // pwm
   pinMode(7, OUTPUT); // pwm
   pinMode(8, OUTPUT); // pwm
 
-  //testPins
-  pinMode(9,OUTPUT);
-  pinMode(13,OUTPUT);
-  pinMode(12,OUTPUT);
-  pinMode(11,OUTPUT);
+  // testPins
+  pinMode(9, OUTPUT);
+  pinMode(13, OUTPUT);
+  pinMode(12, OUTPUT);
+  pinMode(11, OUTPUT);
 }
