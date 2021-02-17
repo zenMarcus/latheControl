@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 
 
-df = pd.read_csv('data/09log.csv', index_col=0)
+df = pd.read_csv('data/10log.csv', index_col=0)
 
 df['sinTheta'] = np.sin(-df.theta)
 df['cosTheta'] = np.cos(-df.theta)

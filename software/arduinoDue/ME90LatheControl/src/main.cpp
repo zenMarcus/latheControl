@@ -35,7 +35,6 @@ double vKp = 0.00,
        vKi = 0.00, 
        vKd = 0.00;
 
-
 AS5048A motorEncoder(CsnMot);
 RunningAverage setSpeedAverage(10); //set speed to be sampled as running Average
 RunningAverage inputCurrentAverage(30);
@@ -78,7 +77,6 @@ int logState = 0;
 int ilog = 0;
 
 //----------------------------------------------------------------------------------------/
-
 
 
 void eStopPressed(){
