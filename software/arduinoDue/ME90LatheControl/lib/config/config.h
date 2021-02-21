@@ -17,7 +17,7 @@
 //The register can take a value of 6 so this works out.
 //10500 instead gives a register value of 4 so that works too.
 //Don't try frequencies that don't divide cleanly into 84Mhz / (Duty * 2)
-#define PWM_FREQ			5250  //26250
+#define PWM_FREQ			10500  //26250
 #define MAX_PWM_DUTY		1000 //800 //max value duty cycle can take
 #define PWM_CLOCK			(PWM_FREQ * MAX_PWM_DUTY * 2ul) //number of PWM ticks per second - autocalculated - don't modify this line
 #define PWM_PICO_PER_TICK	(1000000000ul / (PWM_CLOCK / 1000ul)) //Number of picoSeconds per PWM clock tick - trust me, it's relevant

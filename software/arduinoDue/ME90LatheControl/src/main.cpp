@@ -20,7 +20,7 @@
 //SPISettings drv8305SPISettings(1000000, MSBFIRST, SPI_MODE1);
 
 // definitions here
-uint16_t FOCFreq = 3;
+uint16_t FOCFreq = 2; //foc is called every FOCFreq interrupts
 uint16_t torquePIDFreq = PWM_FREQ / 14;
 uint16_t velocityPIDFreq = PWM_FREQ / 21;
 
@@ -35,7 +35,7 @@ double vKp = 0.00,
        vKi = 0.00, 
        vKd = 0.00;
 
-AS5048A motorEncoder(CsnMot);
+AS5048A motorEncoder(CsnMot); //construct motor encoder object
 RunningAverage setSpeedAverage(10); //set speed to be sampled as running Average
 RunningAverage inputCurrentAverage(30);
 RunningAverage potAvergage(10);
@@ -72,7 +72,7 @@ String OutString = "";
 volatile bool l,h,c; //for ISR test only remove when validated
 
 uint16_t tempAngle = 0;
-String logTable[1024];
+String logTable[1024]; //foc debug log
 int logState = 0;
 int ilog = 0;
 

@@ -107,7 +107,7 @@ int32_t getBusVoltage()
     int32_t valu ;//= (busVoltRaw - settings.busVoltageBias) * settings.busVoltageScale;
     return valu;
 }
-
+//using floats here adds 15us
 int32_t getCurrentA()
 {
     int32_t valu = ((currentARaw / float(ADC_SAMPLES-1)) * ISenseRange ) - ISenseOffset;

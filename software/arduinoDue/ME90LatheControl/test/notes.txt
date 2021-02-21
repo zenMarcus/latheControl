@@ -1,0 +1,38 @@
+reverse engineerign my own connected
+
+setup:
+    setup_pwm(), 
+    initSpindleDrv(), SPI comm is commented, just enables gates
+    call motorEncoder.init(), sets SPI mode
+    fill up the sine lookup table - Not major but this seems wrong: float (i) / (SINE_TABLE_SIZE - 1)
+    then alignRotor() - seems ok, not sure about the current surge..keep an eye
+
+    now start the internal interrupt for PWM (means FOC is running now)
+    then init the torquePID (off at the moment)
+end
+
+SINE_TABLE_SIZE seem wrong at 1024 
+need to check PWM frequency
+drv8305 does not use SPI but have SCS connected and init ??
+vector amplitude is fixed at 0.2
+
+is the current reading anywhere near correct I = Iq*Id?
+
+
+
+
+// port manipulation note
+You can find the pin numbers associated with the DUE in a document on this site called SAM3X-Arduino Pin Mapping at http://arduino.cc/en/Hacking/PinMappingSAM3X
+
+In that document you will find DUE pin numbers, the SAM3X pin name and the Mapped Pin Name...
+The first column shows the pin number as you are used to... such as the famous LED pin 13. Across in the table you will find the pin name PB27, which implies you can find that pin on PORTB, pin 27.
+
+Therefore you can access that pin at REG_PIOx_SODR, where x would be for PORTB, as in REG_PIOB_SODR and REG_PIOB_CODR, for setting and clearing that particular register...
+To set or clear the particular bit, try this...
+
+Code: [Select]
+
+// This will create a mask with a one in a 32 bit number to set this bit 27 of PORTB
+REG_PIOB_SODR |= (0x01 << 27); // Turn on the LED
+
+REG_PIOB_CODR |= (0x01 << 27); // Turn off the LED using the CODR register

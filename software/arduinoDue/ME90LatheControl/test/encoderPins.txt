@@ -1,0 +1,115 @@
+code from: https://forum.arduino.cc//index.php?PHPSESSID=aj45jjuo0sv3afh2o18u5nbmn0&topic=140205.msg1292713#msg1292713
+/*
+  Quadrature Encoder with Marker via hardware
+*/
+
+volatile int z_Total=0;
+volatile double TPR=0; 
+
+void setup() {
+
+  Serial.begin(115200);  
+  delay(100);
+
+  // Setup Quadrature Encoder
+
+  REG_PMC_PCER0 = (1<<27)|(1<<28)|(1<<29); // activate clock for TC0,TC1,TC2
+
+  // select XC0 as clock source and set capture mode
+  REG_TC0_CMR0 = 5; 
+      //Resets the count every index. Rem out the line above,
+        //and use the line below instead.
+      //REG_TC0_CMR0 = (1<<0)|(1<<2)|(1<<8)|(1<<10); 
+
+  REG_TC0_CMR2 = (1<<0)|(1<<1); // Set to TCLK4
+
+  // activate quadrature encoder and position measure mode, no filters
+  REG_TC0_BMR = (1<<8)|(1<<9)|(1<<12);
+
+  // Enable the clock (CLKEN=1) and reset the counter (SWTRG=1) 
+  REG_TC0_CCR0 = 5;  
+  REG_TC0_CCR1 = 5;
+  REG_TC0_CCR2 = 5;
+
+  //Remark out these 4 lines to disable Index interrupts
+  REG_TC0_CMR1 = (1<<8); // Set rising edge of Z
+  REG_TC0_IER1=0b10000000; // enable interrupt on Z
+  REG_TC0_IDR1=0b01111111; // disable other interrupts
+  NVIC_EnableIRQ(TC1_IRQn);
+
+}
+
+void loop() {
+
+  //REG_TC0_CV0 Stores count from encoder
+  Serial.println(REG_TC0_CV0); 
+
+  //REG_TC0_CV1 Stores count from index if interrupts are off
+    //if interrupts are on, CV1 will always reset every cycle to zero.
+  if (REG_TC0_CV1 == 0) 
+  {
+    Serial.print(z_Total);
+    Serial.println("         -With Int");
+  }
+  else 
+  {
+    Serial.print(REG_TC0_CV1);
+    Serial.println("         -No Int");
+  }
+  //TPR holds the quantity of ticks every Index. Index interrupts must be on.
+  //TCLK4 is set so 128 is the divisor.
+  Serial.print((F_CPU/128/TPR)*60);Serial.println(" RPM");
+  Serial.println("-------");
+
+  delay(500);
+
+}
+
+
+
+void TC1_Handler() {
+  //This won't fire unless the Index interrupt is enabled above
+  z_Total++;
+
+  long dummy=REG_TC0_SR1; // vital - reading this clears some flag
+                            // otherwise you get infinite interrupts
+
+  TPR=REG_TC0_CV2; //Store ticks
+  REG_TC0_CCR2 = 4; //Reset counter
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+code from:
+https://forum.arduino.cc/index.php?topic=140205.0
+
+
+const int quad_A = 2;
+const int quad_B = 13;
+const unsigned int mask_quad_A = digitalPinToBitMask(quad_A);
+const unsigned int mask_quad_B = digitalPinToBitMask(quad_B);  
+
+void setup() {
+    Serial.begin(115200);  
+    delay(100);
+    
+    // activate peripheral functions for quad pins
+    REG_PIOB_PDR = mask_quad_A;     // activate peripheral function (disables all PIO functionality)
+    REG_PIOB_ABSR |= mask_quad_A;   // choose peripheral option B    
+    REG_PIOB_PDR = mask_quad_B;     // activate peripheral function (disables all PIO functionality)
+    REG_PIOB_ABSR |= mask_quad_B;   // choose peripheral option B 
+    
+    // activate clock for TC0
+    REG_PMC_PCER0 = (1<<27);
+    // select XC0 as clock source and set capture mode
+    REG_TC0_CMR0 = 5; 
+    // activate quadrature encoder and position measure mode, no filters
+    REG_TC0_BMR = (1<<9)|(1<<8)|(1<<12);
+    // enable the clock (CLKEN=1) and reset the counter (SWTRG=1) 
+    // SWTRG = 1 necessary to start the clock!!
+    REG_TC0_CCR0 = 5;    
+    
+void loop() {
+  Serial.println(REG_TC0_CV0,DEC);
+  delay(500);
+}

@@ -43,7 +43,7 @@
   #define CsnX 47 //(not use but needs init)
   #define CsnZ 49 //(not use but needs init)
   #define CsnSpn 50 //(not use but needs init)
-  #define CsnMot 31
+  #define CsnMot 31 // motor encoder chip select
 
 //Switches
   #define RUN_PIN 23

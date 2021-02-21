@@ -14,11 +14,11 @@ int phaseOffsetB = SINE_TABLE_SIZE / 3;
 int phaseOffsetC = (SINE_TABLE_SIZE / 3) * 2;
 
 uint16_t updateFoc(){
-    digitalWrite(11, HIGH);
     
     uint16_t FOCIndex;
     uint16_t magAngle;
-  
+    
+    //encoder reading is 35us long
     rotorAngle = float(motorEncoder.getRotation());
     //vectorAmplitude = float(getMotorTemp2()) / 4096 / 4;
     vectorAmplitude =  0.2;
@@ -27,6 +27,7 @@ uint16_t updateFoc(){
     //scale it range 0-SINE_TABLE_SIZE
     magAngle = (magAngle / float(motorEncResolution)) * (SINE_TABLE_SIZE-1);
 
+    REG_PIOD_SODR |= (0x01 << 7);
     //calculate FOCIndex
     //set the vector according to the required direction (rotorAngle +- PI/2)
     if (vectorAmplitude < 0){
@@ -44,24 +45,28 @@ uint16_t updateFoc(){
 
 
     // Measuring currents and scaling them
-    float IphaseA = getCurrentA();
-    float IphaseB = getCurrentB();
-    float IphaseC = getCurrentC();
-    // float IphaseC = -IphaseA - IphaseB;
+    //float IphaseA = getCurrentA();
+    //float IphaseB = getCurrentB();
+    //float IphaseC = getCurrentC();
+    /*/ float IphaseC = -IphaseA - IphaseB;
     // Clarke transform (power invariant)
     float X = (2 * IphaseA - IphaseB - IphaseC) * 0.4082;
-    float Y = (IphaseB - IphaseC) * 0.707106;
+    float Y = (IphaseB - IphaseC) * 0.707106; // 1/sqrt(2)
     // Z = (IphaseA + IphaseB + IphaseC)*(1/sqrt(3)); //redundant
     // Park transform - replace trig with LUT
     float theta = (1 - (float(magAngle) / SINE_TABLE_SIZE)) * 6.283185307179586;
-    digitalWrite(11, LOW);
+    
+    //timing measurement
+    
     float co = cos(theta);
     float si = sin(theta);
 
     directCurrent = co * X + si * Y;
     quadratureCurrent = co * Y - si * X;
-
-    //debug logger
+    */
+    // digitalWrite(11, LOW); 
+    REG_PIOD_CODR |= (0x01 << 7);
+    /*/debug logger
     if((ilog < 1024) && (logState == 1)){
         logTable[ilog] = String(ilog) + "," + String(theta) + "," + IphaseA + "," + IphaseB + "," +  IphaseC + "," + X + "," + Y + "," + directCurrent + "," + quadratureCurrent;
         ilog++;
@@ -69,7 +74,7 @@ uint16_t updateFoc(){
     if((ilog >= 1023) && (logState == 1)){ 
         logState = 2;
     }
-    
+    */
    return rotorAngle;
 }
 
@@ -113,7 +118,7 @@ bool alignRotor(){
 // fills sine LUT - shifted positive and scaled to the max pwm dutycycle value 
 void fillSineTable (){
   for (int i=0; i < SINE_TABLE_SIZE; i++){
-      float theta = float (i) / (SINE_TABLE_SIZE - 1);
+      float theta = float (i) / SINE_TABLE_SIZE;
       float sinTheta = (1+ sin(theta * 2 * PI)) / 2;
       pwmSineTable[i] = int(sinTheta * MAX_PWM_DUTY);
       //Serial.println(pwmSineTable[i]); //debug line
