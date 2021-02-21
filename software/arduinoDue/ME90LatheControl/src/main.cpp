@@ -20,10 +20,10 @@
 //SPISettings drv8305SPISettings(1000000, MSBFIRST, SPI_MODE1);
 
 // definitions here
-uint16_t FOCFreq = 2; //foc is called every FOCFreq interrupts
+uint16_t FOCFreq = 4;     //foc is called every FOCFreq interrupts min is 3 beacuse of SPI encoder at the moment
 uint16_t torquePIDFreq = PWM_FREQ / 14;
 uint16_t velocityPIDFreq = PWM_FREQ / 21;
-
+int16_t vectorAmp = 0;    //patchy var to replace vectorAmplitude to int (PID will need to run on int math)
 // PIDs
 double reqSpindleTorque, quadratureCurrent, directCurrent,vectorAmplitude, inputCurrent;
 double tKp = 1.0,
@@ -189,7 +189,10 @@ void loop() {
   //Serial.print(getMotorTemp2());
   //Serial.print('\t');
   //Serial.println(tempAngle);
-  delay(3);
+  //delay(3);
+  
+  vectorAmp = -getMotorTemp2(); //the test speed pot is wired to the temp channel 
+  Serial.println(vectorAmp);
 
   if((millis() > 4000) && (logState ==0)){
     Serial.println("start log");

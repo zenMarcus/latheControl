@@ -17,7 +17,7 @@
 //The register can take a value of 6 so this works out.
 //10500 instead gives a register value of 4 so that works too.
 //Don't try frequencies that don't divide cleanly into 84Mhz / (Duty * 2)
-#define PWM_FREQ			10500  //26250
+#define PWM_FREQ			21000 //10500  //21kHz is just out of audible range
 #define MAX_PWM_DUTY		1000 //800 //max value duty cycle can take
 #define PWM_CLOCK			(PWM_FREQ * MAX_PWM_DUTY * 2ul) //number of PWM ticks per second - autocalculated - don't modify this line
 #define PWM_PICO_PER_TICK	(1000000000ul / (PWM_CLOCK / 1000ul)) //Number of picoSeconds per PWM clock tick - trust me, it's relevant
@@ -70,8 +70,9 @@ extern AS5048A motorEncoder;
 extern uint16_t FOCFreq; 
 extern uint16_t torquePIDFreq; 
 extern uint16_t velocityPIDFreq;
+extern int16_t vectorAmp; //this is used in the foc
 
-const double maxVectorAmplitude = 0.1;
+const double maxVectorAmplitude = 0.1; //this may be removed
 const int motorEncResolution = 16384; //14bit encoder
 const int maxMotorVelocity = 50; //1450; //in RPM
 

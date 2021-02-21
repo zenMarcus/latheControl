@@ -6,43 +6,48 @@
 #include "adc.h"
 #include "interrupts.h"
 
-float rotorAngle = 0;
-//uint16_t FOCoffset = 0;
+uint16_t rotorAngle = 0;
 int pwmSineTable[SINE_TABLE_SIZE];
 
 int phaseOffsetB = SINE_TABLE_SIZE / 3;
 int phaseOffsetC = (SINE_TABLE_SIZE / 3) * 2;
 
+uint16_t FOCOffset = motorEncResolution/4;
+uint16_t sineIndexScaler = motorEncResolution / SINE_TABLE_SIZE;
+
 uint16_t updateFoc(){
     
     uint16_t FOCIndex;
+    uint16_t FOCAngle;
     uint16_t magAngle;
     
-    //encoder reading is 35us long
-    rotorAngle = float(motorEncoder.getRotation());
-    //vectorAmplitude = float(getMotorTemp2()) / 4096 / 4;
-    vectorAmplitude =  0.2;
+    REG_PIOD_SODR |= (0x01 << 7); //pin 11 high for timing
+    rotorAngle = motorEncoder.getRotation();//this takes 52.4us ! will cange to a HW interrupt
+    
     //calculate magnetic angle
-    magAngle = (int(rotorAngle) * POLES) & (motorEncResolution - 1);
-    //scale it range 0-SINE_TABLE_SIZE
-    magAngle = (magAngle / float(motorEncResolution)) * (SINE_TABLE_SIZE-1);
+    magAngle = (rotorAngle * POLES) & (motorEncResolution - 1);
 
-    REG_PIOD_SODR |= (0x01 << 7);
-    //calculate FOCIndex
+    //calculate FOCAngle (rename to quadratureAngle ??) ---
     //set the vector according to the required direction (rotorAngle +- PI/2)
-    if (vectorAmplitude < 0){
-        FOCIndex = magAngle + (SINE_TABLE_SIZE/4);
+    if (vectorAmp < 0){
+        FOCAngle = (magAngle + FOCOffset) & (motorEncResolution-1);
     }
     else{
-        //FOCIndex = (((rotorAngle / motorEncResolution) * (SINE_TABLE_SIZE-1) ) * POLES) - (SINE_TABLE_SIZE/4);
-        FOCIndex = magAngle - (SINE_TABLE_SIZE/4);
+        FOCAngle = (magAngle - FOCOffset) & (motorEncResolution-1);
     }
 
-    updatePWM((pwmSineTable[ FOCIndex & (SINE_TABLE_SIZE-1) ] * abs(vectorAmplitude)),
-             (pwmSineTable[ (FOCIndex + phaseOffsetB) & (SINE_TABLE_SIZE-1)] * abs(vectorAmplitude) ),
-             (pwmSineTable[ (FOCIndex + phaseOffsetC) & (SINE_TABLE_SIZE-1)] * abs(vectorAmplitude) )
+    //scale it in range 0-SINE_TABLE_SIZE-1
+    FOCIndex = FOCAngle / sineIndexScaler;
+
+    //update the pwm with appropriate duty
+    int scaler = abs(vectorAmp); //just removing the sign
+    updatePWM((pwmSineTable[ FOCIndex & (SINE_TABLE_SIZE-1) ] * scaler) >> 12, // x >> 12 =  x / (2^12) = x / ADC_RES (but is faster and less readable)
+             (pwmSineTable[ (FOCIndex + phaseOffsetB) & (SINE_TABLE_SIZE-1)] * scaler ) >> 12,
+             (pwmSineTable[ (FOCIndex + phaseOffsetC) & (SINE_TABLE_SIZE-1)] * scaler ) >> 12
             );
 
+    //this is going to be the next bit to work on. 
+    // the code works but shall be refactored to remove all float math
 
     // Measuring currents and scaling them
     //float IphaseA = getCurrentA();
@@ -65,7 +70,6 @@ uint16_t updateFoc(){
     quadratureCurrent = co * Y - si * X;
     */
     // digitalWrite(11, LOW); 
-    REG_PIOD_CODR |= (0x01 << 7);
     /*/debug logger
     if((ilog < 1024) && (logState == 1)){
         logTable[ilog] = String(ilog) + "," + String(theta) + "," + IphaseA + "," + IphaseB + "," +  IphaseC + "," + X + "," + Y + "," + directCurrent + "," + quadratureCurrent;
@@ -75,24 +79,22 @@ uint16_t updateFoc(){
         logState = 2;
     }
     */
-   return rotorAngle;
+    REG_PIOD_CODR |= (0x01 << 7); //pin 11 low for timing
+    return rotorAngle;
 }
 
-// align magnetic field and record encoder pos for FOC
+// align magnetic field and record encoder pos for FOC !! still with floats !!
 bool alignRotor(){
-    float vectorRamp = 0;
     word rotation = motorEncoder.getRawRotation();
 
     Serial.println("alignign rotor");
     //ramp up the appropriate duty cycle to line up one magnetic pole
-    while(vectorRamp <= 0.25){
-        updatePWM( (pwmSineTable[ 0 ] * float(vectorRamp)),
-                  (pwmSineTable[ (0 + phaseOffsetB) & (SINE_TABLE_SIZE-1)] * float(vectorRamp)),
-                  (pwmSineTable[ (0 + phaseOffsetC) & (SINE_TABLE_SIZE-1)] * float(vectorRamp))
-                  );
-
-        vectorRamp += 0.0001;
-        //Serial.println(rotation); // degbug line
+    for(int vectorRamp=0;vectorRamp<1024;vectorRamp++){
+        updatePWM((pwmSineTable[ 0 & (SINE_TABLE_SIZE-1) ] * vectorRamp) >> 12,
+                  (pwmSineTable[ (0 + phaseOffsetB) & (SINE_TABLE_SIZE-1)] * vectorRamp ) >> 12,
+                  (pwmSineTable[ (0 + phaseOffsetC) & (SINE_TABLE_SIZE-1)] * vectorRamp ) >> 12
+                 );
+       //Serial.println(rotation); // degbug line
         delay(1);
     }
  

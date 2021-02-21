@@ -37,16 +37,18 @@ void ADC_Handler() //cascaded trigger - PWM triggers ADC which triggers a DMA dr
             ADC->ADC_RCR=7; //# of samples to take - in this case one sample per enabled ADC port
         
         // now, while still in the handler do the FOC magic right here.
+        //tempAngle = updateFoc();
+        //divide the pwm freq to run or not the foc update, may not need this anymore
         digitalWrite(12,HIGH);
         if ((interruptCount % FOCFreq == 0)){
             tempAngle = updateFoc();
         }
-        if ((interruptCount % velocityPIDFreq == 0)){
+        /*if ((interruptCount % velocityPIDFreq == 0)){
             //update velocitiy
             //compute PID
         }
         digitalWrite(12,LOW);
-
+        */
         interruptCount++;
     }
         //if (f & (1 << 26)) busVoltRaw = 4000; not sure about this line   ??

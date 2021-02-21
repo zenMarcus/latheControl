@@ -1,4 +1,4 @@
-reverse engineerign my own connected
+reverse engineering my own connected
 
 setup:
     setup_pwm(), 
@@ -11,12 +11,28 @@ setup:
     then init the torquePID (off at the moment)
 end
 
-SINE_TABLE_SIZE seem wrong at 1024 
-need to check PWM frequency
+PWM frequency set to 10kHz, FocfreqDivider = 2 (=5Khz)
 drv8305 does not use SPI but have SCS connected and init ??
 vector amplitude is fixed at 0.2
 
 is the current reading anywhere near correct I = Iq*Id?
+
+
+
+changes to make to keep to integer math
+1   Keep encoder values in counts (why am i not doing that???)
+2   Refactor FOC math for:
+        rotorAngle -> change to 14bits
+        magAngle
+        focIndex ->
+        vectorAmplitude
+
+        magAngle= (encAngle * POLES) & (ENC_RES-1);
+        focAngle= (magAngle + focOffset) & (ENC_RES-1);
+        focIndex= focAngle / sineIndexScaler;
+
+        for each phase
+        pwm = (sineTable[(focIndex + phaseOffset) & (SINE_TABLE_SIZE-1)] * vecotorAmplitude) >> 12 // equal to: x / (2^12), which equals x / ADC_RES (but is faster)
 
 
 
@@ -36,3 +52,109 @@ Code: [Select]
 REG_PIOB_SODR |= (0x01 << 27); // Turn on the LED
 
 REG_PIOB_CODR |= (0x01 << 27); // Turn off the LED using the CODR register
+
+
+
+
+/////////////////////// some notes on the foc update method
+uint16_t updateFoc(){
+    
+    uint16_t FOCIndex;
+    uint16_t magAngle;
+    
+    //encoder reading is 35us long
+    rotorAngle = float(motorEncoder.getRotation());
+    //vectorAmplitude = float(getMotorTemp2()) / 4096 / 4;
+    vectorAmplitude =  0.2;
+    //calculate magnetic angle
+    magAngle = (int(rotorAngle) * POLES) & (motorEncResolution - 1);
+    //scale it range 0-SINE_TABLE_SIZE
+    magAngle = (magAngle / float(motorEncResolution)) * (SINE_TABLE_SIZE-1);
+
+    REG_PIOD_SODR |= (0x01 << 7);
+    //calculate FOCIndex
+    //set the vector according to the required direction (rotorAngle +- PI/2)
+    if (vectorAmplitude < 0){
+        FOCIndex = magAngle + (SINE_TABLE_SIZE/4);
+    }
+    else{
+        //FOCIndex = (((rotorAngle / motorEncResolution) * (SINE_TABLE_SIZE-1) ) * POLES) - (SINE_TABLE_SIZE/4);
+        FOCIndex = magAngle - (SINE_TABLE_SIZE/4);
+    }
+
+    updatePWM((pwmSineTable[ FOCIndex & (SINE_TABLE_SIZE-1) ] * abs(vectorAmplitude)),
+             (pwmSineTable[ (FOCIndex + phaseOffsetB) & (SINE_TABLE_SIZE-1)] * abs(vectorAmplitude) ),
+             (pwmSineTable[ (FOCIndex + phaseOffsetC) & (SINE_TABLE_SIZE-1)] * abs(vectorAmplitude) )
+            );
+
+
+    // Measuring currents and scaling them
+    //float IphaseA = getCurrentA();
+    //float IphaseB = getCurrentB();
+    //float IphaseC = getCurrentC();
+    /*/ float IphaseC = -IphaseA - IphaseB;
+    // Clarke transform (power invariant)
+    float X = (2 * IphaseA - IphaseB - IphaseC) * 0.4082;
+    float Y = (IphaseB - IphaseC) * 0.707106; // 1/sqrt(2)
+    // Z = (IphaseA + IphaseB + IphaseC)*(1/sqrt(3)); //redundant
+    // Park transform - replace trig with LUT
+    float theta = (1 - (float(magAngle) / SINE_TABLE_SIZE)) * 6.283185307179586;
+    
+    //timing measurement
+    
+    float co = cos(theta);
+    float si = sin(theta);
+
+    directCurrent = co * X + si * Y;
+    quadratureCurrent = co * Y - si * X;
+    */
+    // digitalWrite(11, LOW); 
+    REG_PIOD_CODR |= (0x01 << 7);
+    /*/debug logger
+    if((ilog < 1024) && (logState == 1)){
+        logTable[ilog] = String(ilog) + "," + String(theta) + "," + IphaseA + "," + IphaseB + "," +  IphaseC + "," + X + "," + Y + "," + directCurrent + "," + quadratureCurrent;
+        ilog++;
+    }
+    if((ilog >= 1023) && (logState == 1)){ 
+        logState = 2;
+    }
+    */
+   return rotorAngle;
+}
+
+// align magnetic field and record encoder pos for FOC
+bool alignRotor(){
+    float vectorRamp = 0;
+    word rotation = motorEncoder.getRawRotation();
+
+    Serial.println("alignign rotor");
+    //ramp up the appropriate duty cycle to line up one magnetic pole
+    while(vectorRamp <= 0.25){
+        updatePWM( (pwmSineTable[ 0 ] * float(vectorRamp)),
+                  (pwmSineTable[ (0 + phaseOffsetB) & (SINE_TABLE_SIZE-1)] * float(vectorRamp)),
+                  (pwmSineTable[ (0 + phaseOffsetC) & (SINE_TABLE_SIZE-1)] * float(vectorRamp))
+                  );
+
+        vectorRamp += 0.0001;
+        //Serial.println(rotation); // degbug line
+        delay(1);
+    }
+ 
+    delay(1000); //give the rotor time to catch up, just in case 
+    rotation = motorEncoder.getRawRotation();
+    Serial.print("pole found at:");
+    Serial.println(rotation);
+    
+    motorEncoder.setZeroPosition(rotation); //record the angle of the pole alignament
+    
+    Serial.print("now set to");
+    Serial.println(motorEncoder.getRotation());
+
+    bool aligned = true;
+
+    // now let the rotor rest
+    updatePWM(0,0,0);
+
+    return aligned;
+
+}
