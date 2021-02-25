@@ -17,12 +17,12 @@ uint16_t sineIndexScaler = motorEncResolution / SINE_TABLE_SIZE;
 
 uint16_t updateFoc(){
     
+    REG_PIOD_SODR |= (0x01 << 7); //pin 11 high for timing
     uint16_t FOCIndex;
     uint16_t FOCAngle;
     uint16_t magAngle;
     
-    REG_PIOD_SODR |= (0x01 << 7); //pin 11 high for timing
-    rotorAngle = motorEncoder.getRotation();//this takes 52.4us ! will cange to a HW interrupt
+    rotorAngle = motorEncoder.getRotation();//this takes 26.4us ! will cange to a HW interrupt
     
     //calculate magnetic angle
     magAngle = (rotorAngle * POLES) & (motorEncResolution - 1);
@@ -80,6 +80,7 @@ uint16_t updateFoc(){
     }
     */
     REG_PIOD_CODR |= (0x01 << 7); //pin 11 low for timing
+
     return rotorAngle;
 }
 
@@ -115,6 +116,46 @@ bool alignRotor(){
 
     return aligned;
 
+}
+
+// maps encoder linearity vs magnetic poles
+void mapEncoder(){
+    word rotation = motorEncoder.getRawRotation(); //not needed?
+
+    Serial.println("alignign rotor...");
+    //ramp up the appropriate duty cycle to line up one magnetic pole
+    for(int vectorRamp=0;vectorRamp<1280;vectorRamp++){
+        updatePWM((pwmSineTable[ 0 & (SINE_TABLE_SIZE-1) ] * vectorRamp) >> 12,
+                  (pwmSineTable[ (0 + phaseOffsetB) & (SINE_TABLE_SIZE-1)] * vectorRamp ) >> 12,
+                  (pwmSineTable[ (0 + phaseOffsetC) & (SINE_TABLE_SIZE-1)] * vectorRamp ) >> 12
+                 );
+       //Serial.println(rotation); // degbug line
+        delay(1);
+    }
+ 
+    delay(100); //give the rotor time to catch up, just in case 
+    word encoderOffset = motorEncoder.getRawRotation();
+    Serial.print("pole found at absolute value: ");
+    Serial.println(encoderOffset);
+    
+    motorEncoder.setZeroPosition(encoderOffset); //set the offset to align encoder 0 to magnetic pole alignament
+    Serial.print("offset: ");
+    Serial.println(motorEncoder.getRotation());
+
+    // spin the rotor in open loop for a full revolution and record the encoder value
+    for (int i=0;i<SINE_TABLE_SIZE*POLES;i++){
+        updatePWM((pwmSineTable[ i & (SINE_TABLE_SIZE-1) ] * 1280) >> 12,
+                  (pwmSineTable[ (i + phaseOffsetB) & (SINE_TABLE_SIZE-1)] * 1280 ) >> 12,
+                  (pwmSineTable[ (i + phaseOffsetC) & (SINE_TABLE_SIZE-1)] * 1280 ) >> 12
+                 );
+        Serial.println(String(i) + "," + String(motorEncoder.getRawRotation())); // printing the abs linearity map
+        delayMicroseconds(25);
+    }
+
+    bool aligned = true;
+
+    // now let the rotor rest
+    updatePWM(0,0,0);
 }
 
 // fills sine LUT - shifted positive and scaled to the max pwm dutycycle value 

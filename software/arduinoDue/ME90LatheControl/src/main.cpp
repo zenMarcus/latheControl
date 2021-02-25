@@ -16,14 +16,13 @@
 
 //define SPI confings for all devices
 //SPISettings LS73663(1000000, MSBFIRST, SPI_MODE1);//rnd vals
-
 //SPISettings drv8305SPISettings(1000000, MSBFIRST, SPI_MODE1);
 
 // definitions here
 uint16_t FOCFreq = 4;     //foc is called every FOCFreq interrupts min is 3 beacuse of SPI encoder at the moment
 uint16_t torquePIDFreq = PWM_FREQ / 14;
 uint16_t velocityPIDFreq = PWM_FREQ / 21;
-int16_t vectorAmp = 0;    //patchy var to replace vectorAmplitude to int (PID will need to run on int math)
+int16_t vectorAmp = 0;    // raw adc 0 - 4096 //patchy var to replace vectorAmplitude to int (PID will need to run on int math)
 // PIDs
 double reqSpindleTorque, quadratureCurrent, directCurrent,vectorAmplitude, inputCurrent;
 double tKp = 1.0,
@@ -158,9 +157,13 @@ void setup() {
   // call this every time for the moment, but will need to be called upon
   // request
   delay(10);
-  rotorAligned = alignRotor();
+  //rotorAligned = alignRotor();
   //Serial.println(FOCoffset); //debug line
+  //motorEncoder.setZeroPosition(6160); //i need to find a way to store this in memory
+
   
+  mapEncoder(); //i may need to remove the cogging torque (fft, notch filter?)
+
   //this will start the PWM interrupts
   setup_adc();
 
@@ -192,7 +195,7 @@ void loop() {
   //delay(3);
   
   vectorAmp = -getMotorTemp2(); //the test speed pot is wired to the temp channel 
-  Serial.println(vectorAmp);
+  //Serial.println(vectorAmp);
 
   if((millis() > 4000) && (logState ==0)){
     Serial.println("start log");

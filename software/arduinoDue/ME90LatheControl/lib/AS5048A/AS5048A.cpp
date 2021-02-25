@@ -26,7 +26,7 @@ AS5048A::AS5048A(byte arg_cs){
  */
 void AS5048A::init(){
 	// 1MHz clock (AMS should be able to accept up to 10MHz)
-	settings = SPISettings(1000000, MSBFIRST, SPI_MODE1);
+	settings = SPISettings(4000000, MSBFIRST, SPI_MODE1); //10MHz saves about 5us
 	
 	//setup pins
 	pinMode(_cs, OUTPUT);
@@ -78,6 +78,8 @@ int AS5048A::getRotation(){
 	//if(rotation < -0x1FFF) rotation = rotation+0x3FFF;
 
 	return rotation;
+    
+
 }
 
 /**

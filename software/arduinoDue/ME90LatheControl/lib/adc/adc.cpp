@@ -39,7 +39,7 @@ void ADC_Handler() //cascaded trigger - PWM triggers ADC which triggers a DMA dr
         // now, while still in the handler do the FOC magic right here.
         //tempAngle = updateFoc();
         //divide the pwm freq to run or not the foc update, may not need this anymore
-        digitalWrite(12,HIGH);
+
         if ((interruptCount % FOCFreq == 0)){
             tempAngle = updateFoc();
         }
@@ -47,7 +47,6 @@ void ADC_Handler() //cascaded trigger - PWM triggers ADC which triggers a DMA dr
             //update velocitiy
             //compute PID
         }
-        digitalWrite(12,LOW);
         */
         interruptCount++;
     }
