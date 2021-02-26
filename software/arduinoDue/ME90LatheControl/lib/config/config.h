@@ -71,6 +71,7 @@ extern uint16_t FOCFreq;
 extern uint16_t torquePIDFreq; 
 extern uint16_t velocityPIDFreq;
 extern int16_t vectorAmp; //this is used in the foc
+extern uint16_t encoderOffset;
 
 const double maxVectorAmplitude = 0.1; //this may be removed
 const int motorEncResolution = 16384; //14bit encoder

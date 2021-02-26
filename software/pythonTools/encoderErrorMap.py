@@ -4,7 +4,7 @@ import numpy as np
 from scipy import signal
 
 encoderResolution = pow(2, 14)
-magIndex = 1024*14
+magIndex = 1024 * 14
 sampleNumber = int(encoderResolution / 16)
 index = np.linspace(0, encoderResolution, magIndex, endpoint=False)
 nominalEncoder = np.linspace(0, encoderResolution, encoderResolution, endpoint=False)
@@ -12,18 +12,21 @@ nominalEncoder = np.linspace(0, encoderResolution, encoderResolution, endpoint=F
 print(sampleNumber)
 df = pd.read_csv('data/encoderMap6148.csv')
 print(df.describe())
-
+# calculate linearity error
 encoderError = (df.encoder - index)
 
+# resample encoder from magindex to encoder resolution
 resampledEncoder = signal.resample(df.encoder, encoderResolution)
 
-resampledLut = signal.resample(encoderError, sampleNumber)
+# create a LUT by down sampling - now done after filtering
+# resampledLut = signal.resample(encoderError, sampleNumber)
 
-np.savetxt('data/encoderErrorSignal6148.csv', (nominalEncoder, resampledEncoder)) #notRight
+# creat a 2D array to write to .csv
+outArray = np.array([nominalEncoder, resampledEncoder])
+np.savetxt('data/encoderErrorSignal6148.csv', np.transpose(outArray), delimiter=',', fmt=['%d', '%f'])
 
-#fig, (ax1, ax2, ax3) = plt.subplots(3, 1, sharex=True)
+# plot everything
 fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True)
-
 
 ax1.plot(index, df.encoder)
 
@@ -31,14 +34,11 @@ ax1.set(xlabel='sample', ylabel='encoder value', title='raw encoder vs poles')
 ax1.grid()
 ax1.legend()
 
-ax2.set(xlabel='lut index', ylabel='encoder error (counts)', title='error')
 ax2.plot(index, encoderError, label='error')
 
-ax2.step(np.linspace(0, encoderResolution, sampleNumber, endpoint=False), resampledLut, label='lut')
-# #ax2.plot(df.index, df.Y)
-# #ax2.plot(df.sinTheta)
-# #ax2.plot(df.cosTheta)
-#
+ax2.set(xlabel='lut index', ylabel='encoder error (counts)', title='error')
+#ax2.step(np.linspace(0, encoderResolution, sampleNumber, endpoint=False), resampledLut, label='lut')
+
 ax2.grid()
 ax2.legend()
 #

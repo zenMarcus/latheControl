@@ -1,17 +1,7 @@
-# this was a generic code i use for designing filters
-# todo: refactor to properly after testing the data
-
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import signal
 from scipy.fftpack import fft, fftfreq
-
-motorPoles = 14
-pwmTableSize = 1024
-divisions = motorPoles * pwmTableSize  # annoingly the PWM divisions around one revolution
-encoderResolution = pow(2, 14)
-lutSize = 1024  # the size of the LUT we are creating
-timeScaler = 0.00025  # arbitrarily scale the time as is not really time but a spatial frequency instead
 
 # load matlab dataset
 # matlabData = loadmat('data/filename.mat', mat_dtype=True)
@@ -19,16 +9,11 @@ timeScaler = 0.00025  # arbitrarily scale the time as is not really time but a s
 
 # load csv dataset
 t, mySignal = np.loadtxt('data/encoderMap6148.csv', skiprows=1, usecols=(0, 1), delimiter=',', unpack=True)
+t = np.linspace(0,14 * 1024,14 * 1024,endpoint=False)
+error = t * (pow(2, 14) / (14 * 1024)) - mySignal
+mySignal = error
 
-# time is normally read from the file but this time we need to overWrite it
-# this just create the ideal encoder signal... linear
-t = np.linspace(0, encoderResolution, len(mySignal), endpoint=False)
-
-# calculate the linearity error (the actual signal we are intersted in)
-# error = t * (encoderResolution / divisions) - mySignal
-mySignal = t - mySignal
-
-t = t * timeScaler
+t = t * 0.00025
 # define the domain according to the dataset length
 t0 = t[0]  # s
 t1 = t[len(t) - 1]  # s
@@ -70,6 +55,7 @@ win = signal.windows.hamming(sampleCount + 1)
 spectrum = fft(mySignal)
 spectrumWin = fft(mySignal * win)
 
+
 # generate frequencies array
 spectrumFreq = fftfreq(spectrum.size, samplingPeriod)
 
@@ -90,28 +76,23 @@ b, a = signal.butter(N=5, Wn=4, fs=samplingFrequency, btype='lowpass', analog=Fa
 # b, a = signal.iircomb(w0=50, Q=5, ftype='notch', fs=samplingFrequency)
 
 
-# create it's characteristic
+# create it's charcteristic
 freq, h = signal.freqz(b, a, fs=samplingFrequency)
 
 # and apply the filter
 filteredSignal = signal.filtfilt(b, a, x=mySignal)
+resampledSignal = signal.resample(filteredSignal, 1024)
+lut = resampledSignal.astype(int)
 
-# todo: check if round before casting to int improves the fit
-# now down-sample the signal to a reasonable look up table size
-resampledSignal = signal.resample(filteredSignal, lutSize)
-lut = np.around(resampledSignal, decimals=0)
-
-# export the data
-# todo: this will need to export a .cpp and a .h file
-np.savetxt('data/encoderErrorLut.txt', lut, fmt='%d', newline=',')
-# fft of filtered signal
+np.savetxt('data/encoderErrorLut.csv', lut, fmt='%d')
+# fft of filteres signal
 # spectrumWin = fft(filteredSignal)
 
 
 # plot the filter characteristic ------------------
 # fig, ax = plt.subplots(3, 1, tight_layout=True)
 
-fig1 = plt.figure(figsize=[16, 8], constrained_layout=False)
+fig1 = plt.figure(figsize=[16,8],constrained_layout=False)
 gs = fig1.add_gridspec(2, 2)
 ax1 = fig1.add_subplot(gs[1, :-1])
 ax2 = fig1.add_subplot(gs[0, :-1])
@@ -140,10 +121,8 @@ ax2.set(xlabel='frequency (Hz)')
 # then the signals
 ax3.plot(t, mySignal, color="green", linewidth=0.3, label='Signal')
 ax3.plot(t, filteredSignal, color="blue", linewidth=0.6, label='filtered signal')
-# and the LUT scaled to the same domain
-ax3.step(np.linspace(0, encoderResolution * timeScaler, lutSize), lut, color="orange", linewidth=1, label='resampled')
+ax3.step(np.linspace(0, sampleCount * 0.00025, 1024), lut, color="orange", linewidth=1, label='resampled')
 
-np.linspace(0, sampleCount * timeScaler, 1024)
 ax3.set(xlabel='time (s)', ylabel='Signal')
 ax3.legend(loc=1)
 ax3.grid()

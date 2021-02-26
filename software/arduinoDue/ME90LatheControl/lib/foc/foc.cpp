@@ -5,6 +5,7 @@
 #include "pwm.h"
 #include "adc.h"
 #include "interrupts.h"
+#include "linEncoder.h"
 
 uint16_t rotorAngle = 0;
 int pwmSineTable[SINE_TABLE_SIZE];
@@ -23,10 +24,11 @@ uint16_t updateFoc(){
     uint16_t magAngle;
     
     rotorAngle = motorEncoder.getRotation();//this takes 26.4us ! will cange to a HW interrupt
+    uint16_t thetaAbs = (encoderOffset + rotorAngle) & (motorEncResolution-1);
+    rotorAngle = rotorAngle + _lin_encoder[thetaAbs >> 4]; //the linearization map is encoderRes/16 long
     
     //calculate magnetic angle
     magAngle = (rotorAngle * POLES) & (motorEncResolution - 1);
-
     //calculate FOCAngle (rename to quadratureAngle ??) ---
     //set the vector according to the required direction (rotorAngle +- PI/2)
     if (vectorAmp < 0){
@@ -85,8 +87,7 @@ uint16_t updateFoc(){
 }
 
 // align magnetic field and record encoder pos for FOC !! still with floats !!
-bool alignRotor(){
-    word rotation = motorEncoder.getRawRotation();
+uint16_t alignRotor(){
 
     Serial.println("alignign rotor");
     //ramp up the appropriate duty cycle to line up one magnetic pole
@@ -100,26 +101,23 @@ bool alignRotor(){
     }
  
     delay(1000); //give the rotor time to catch up, just in case 
-    rotation = motorEncoder.getRawRotation();
-    Serial.print("pole found at:");
+    word rotation = motorEncoder.getRawRotation();
+    Serial.print("pole found at absolute angle:");
     Serial.println(rotation);
     
     motorEncoder.setZeroPosition(rotation); //record the angle of the pole alignament
     
     Serial.print("now set to");
-    Serial.println(motorEncoder.getRotation());
+    Serial.println(motorEncoder.getRotation()); //this should say 0
 
-    bool aligned = true;
-
-    // now let the rotor rest
+    // let the rotor rest
     updatePWM(0,0,0);
-
-    return aligned;
+    return rotation;
 
 }
 
 // maps encoder linearity vs magnetic poles
-void mapEncoder(){
+uint16_t mapEncoder(){
     word rotation = motorEncoder.getRawRotation(); //not needed?
 
     Serial.println("alignign rotor...");
@@ -134,13 +132,13 @@ void mapEncoder(){
     }
  
     delay(100); //give the rotor time to catch up, just in case 
-    word encoderOffset = motorEncoder.getRawRotation();
+    rotation = motorEncoder.getRawRotation();
     Serial.print("pole found at absolute value: ");
-    Serial.println(encoderOffset);
+    Serial.println(rotation);
     
-    motorEncoder.setZeroPosition(encoderOffset); //set the offset to align encoder 0 to magnetic pole alignament
+    motorEncoder.setZeroPosition(rotation); //set the offset to align encoder 0 to magnetic pole alignament
     Serial.print("offset: ");
-    Serial.println(motorEncoder.getRotation());
+    Serial.println(rotation);
 
     // spin the rotor in open loop for a full revolution and record the encoder value
     for (int i=0;i<SINE_TABLE_SIZE*POLES;i++){
@@ -152,10 +150,10 @@ void mapEncoder(){
         delayMicroseconds(25);
     }
 
-    bool aligned = true;
 
     // now let the rotor rest
     updatePWM(0,0,0);
+    return rotation;
 }
 
 // fills sine LUT - shifted positive and scaled to the max pwm dutycycle value 

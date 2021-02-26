@@ -19,6 +19,7 @@
 //SPISettings drv8305SPISettings(1000000, MSBFIRST, SPI_MODE1);
 
 // definitions here
+uint16_t encoderOffset = 0;
 uint16_t FOCFreq = 4;     //foc is called every FOCFreq interrupts min is 3 beacuse of SPI encoder at the moment
 uint16_t torquePIDFreq = PWM_FREQ / 14;
 uint16_t velocityPIDFreq = PWM_FREQ / 21;
@@ -162,8 +163,9 @@ void setup() {
   //motorEncoder.setZeroPosition(6160); //i need to find a way to store this in memory
 
   
-  mapEncoder(); //i may need to remove the cogging torque (fft, notch filter?)
-
+  //encoderOffset = mapEncoder(); //i may need to remove the cogging torque (fft, notch filter?)
+  encoderOffset = alignRotor();
+  Serial.println("encoder offset = " + String(encoderOffset));
   //this will start the PWM interrupts
   setup_adc();
 
