@@ -2,11 +2,28 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="816a3da3-ab8c-4731-bc64-02e73b2450d6" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/../arduinoDue/ME90LatheControl/.vscode/settings.json" beforeDir="false" afterPath="$PROJECT_DIR$/../arduinoDue/ME90LatheControl/.vscode/settings.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../arduinoDue/ME90LatheControl/lib/adc/adc.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../arduinoDue/ME90LatheControl/lib/adc/adc.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../arduinoDue/ME90LatheControl/lib/config/config.h" beforeDir="false" afterPath="$PROJECT_DIR$/../arduinoDue/ME90LatheControl/lib/config/config.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../arduinoDue/ME90LatheControl/lib/foc/foc.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../arduinoDue/ME90LatheControl/lib/foc/foc.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../arduinoDue/ME90LatheControl/lib/foc/foc.h" beforeDir="false" afterPath="$PROJECT_DIR$/../arduinoDue/ME90LatheControl/lib/foc/foc.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../arduinoDue/ME90LatheControl/lib/linEncoder/linEncoder.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../arduinoDue/ME90LatheControl/lib/linEncoder/linEncoder.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../arduinoDue/ME90LatheControl/platformio.ini" beforeDir="false" afterPath="$PROJECT_DIR$/../arduinoDue/ME90LatheControl/platformio.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../arduinoDue/ME90LatheControl/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../arduinoDue/ME90LatheControl/src/main.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/encoderErrorLut.csv" beforeDir="false" afterPath="$PROJECT_DIR$/data/encoderErrorLut.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/encoderErrorSignal6148.csv" beforeDir="false" afterPath="$PROJECT_DIR$/data/encoderErrorSignal6148.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/01log.csv" beforeDir="false" afterPath="$PROJECT_DIR$/data/rev1logs/01log.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/02log.csv" beforeDir="false" afterPath="$PROJECT_DIR$/data/rev1logs/02log.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/03log.csv" beforeDir="false" afterPath="$PROJECT_DIR$/data/rev1logs/03log.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/04log.csv" beforeDir="false" afterPath="$PROJECT_DIR$/data/rev1logs/04log.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/05log.csv" beforeDir="false" afterPath="$PROJECT_DIR$/data/rev1logs/05log.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/06log.csv" beforeDir="false" afterPath="$PROJECT_DIR$/data/rev1logs/06log.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/07log.csv" beforeDir="false" afterPath="$PROJECT_DIR$/data/rev1logs/07log.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/08log.csv" beforeDir="false" afterPath="$PROJECT_DIR$/data/rev1logs/08log.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/09log.csv" beforeDir="false" afterPath="$PROJECT_DIR$/data/rev1logs/09log.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/10log.csv" beforeDir="false" afterPath="$PROJECT_DIR$/data/rev1logs/10log.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/encoderErrorMap.py" beforeDir="false" afterPath="$PROJECT_DIR$/encoderErrorMap.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/encoderMapFilter.py" beforeDir="false" afterPath="$PROJECT_DIR$/encoderMapFilter.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/focCsvViewr.py" beforeDir="false" afterPath="$PROJECT_DIR$/focCsvViewr.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -22,8 +39,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/focCsvViewr.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="90">
-              <caret line="8" column="34" selection-start-line="8" selection-start-column="34" selection-end-line="8" selection-end-column="34" />
+            <state relative-caret-position="225">
+              <caret line="15" column="38" lean-forward="true" selection-start-line="15" selection-start-column="38" selection-end-line="15" selection-end-column="38" />
               <folding>
                 <element signature="e#0#31#0" expanded="true" />
               </folding>
@@ -35,28 +52,40 @@
         <entry file="file://$PROJECT_DIR$/intDividers.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="75">
-              <caret line="5" column="26" selection-start-line="5" selection-start-column="26" selection-end-line="5" selection-end-column="26" />
+              <caret line="5" column="26" lean-forward="true" selection-start-line="5" selection-start-column="26" selection-end-line="5" selection-end-column="26" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/encoderErrorMap.py">
+        <entry file="file://$PROJECT_DIR$/focLatenencyCompensation.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="442">
-              <caret line="26" lean-forward="true" selection-start-line="26" selection-end-line="26" />
+            <state relative-caret-position="15">
+              <caret line="1" column="31" lean-forward="true" selection-start-line="1" selection-start-column="31" selection-end-line="1" selection-end-column="31" />
               <folding>
-                <element signature="e#0#31#0" expanded="true" />
+                <element signature="e#0#18#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/encoderMapFilter.py">
+        <entry file="file://$PROJECT_DIR$/data/logABC_01.csv">
+          <provider selected="true" editor-type-id="csv-text-editor">
+            <state>
+              <caret column="5" selection-start-column="5" selection-end-column="5" />
+            </state>
+          </provider>
+          <provider editor-type-id="csv-table-editor">
+            <state showInfoPanel="true" fixedHeaders="false" rowLines="3" />
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/encoderErrorMap.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1907">
-              <caret line="108" lean-forward="true" selection-start-line="108" selection-end-line="108" />
+            <state relative-caret-position="561">
+              <caret line="33" column="10" lean-forward="true" selection-start-line="33" selection-start-column="10" selection-end-line="33" selection-end-column="10" />
               <folding>
                 <element signature="e#0#31#0" expanded="true" />
               </folding>
@@ -65,25 +94,34 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/data/encoderErrorLut.txt">
+        <entry file="file://$PROJECT_DIR$/encoderMapFilter.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state>
-              <caret column="43" selection-start-column="43" selection-end-column="43" />
+            <state relative-caret-position="747">
+              <caret line="152" column="10" lean-forward="true" selection-start-line="19" selection-end-line="152" selection-end-column="10" />
+              <folding>
+                <element signature="e#0#31#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/data/encoderMap6148.csv">
-          <provider selected="true" editor-type-id="csv-text-editor">
-            <state relative-caret-position="510">
-              <caret line="34" column="7" selection-start-line="34" selection-start-column="7" selection-end-line="34" selection-end-column="7" />
+        <entry file="file://$PROJECT_DIR$/bitscopeSignalFilter.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="5">
+              <caret line="31" column="23" lean-forward="true" selection-start-line="31" selection-start-column="23" selection-end-line="31" selection-end-column="23" />
+              <folding>
+                <element signature="e#0#31#0" expanded="true" />
+              </folding>
             </state>
           </provider>
-          <provider editor-type-id="csv-table-editor">
-            <state showInfoPanel="true" fixedHeaders="false" rowLines="3">
-              <column index="0" width="100" />
-              <column index="1" width="100" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file:///Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages/scipy/_lib/_util.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="393">
+              <caret line="274" selection-start-line="274" selection-end-line="274" />
             </state>
           </provider>
         </entry>
@@ -133,16 +171,24 @@
         <option value="$PROJECT_DIR$/data/encoderMap01.csv" />
         <option value="$PROJECT_DIR$/encoderLinearization.py" />
         <option value="$PROJECT_DIR$/encoderErrorMapper.py" />
+        <option value="$PROJECT_DIR$/data/encoderErrorLutTabs.txt" />
+        <option value="$PROJECT_DIR$/data/focLatenencyCompensation.py" />
         <option value="$PROJECT_DIR$/encoderErrorMap.py" />
         <option value="$PROJECT_DIR$/encoderMapFilter.py" />
+        <option value="$PROJECT_DIR$/data/encoderErrorLutTest.txt" />
+        <option value="$PROJECT_DIR$/focLatenencyCompensation.py" />
+        <option value="$PROJECT_DIR$/data/bitscope/currentA5khz.csv" />
+        <option value="$PROJECT_DIR$/data/bitscope/currentA10khzE.csv" />
+        <option value="$PROJECT_DIR$/bitscopeSignalFilter.py" />
+        <option value="$PROJECT_DIR$/focCsvViewr.py" />
+        <option value="$PROJECT_DIR$/data/logABC_01.csv" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds">
-    <option name="x" value="-408" />
-    <option name="y" value="-1417" />
-    <option name="width" value="2560" />
-    <option name="height" value="1417" />
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="y" value="23" />
+    <option name="width" value="1680" />
+    <option name="height" value="1027" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -186,7 +232,7 @@
   <component name="PropertiesComponent">
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -195,8 +241,10 @@
       <recent name="$PROJECT_DIR$/../../../../paragliding" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/data" />
+      <recent name="$PROJECT_DIR$/data/bitscope" />
+      <recent name="$PROJECT_DIR$/data/rev1logs" />
       <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/data" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -211,8 +259,8 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.encoderMapFilter">
-    <configuration name="adcIntegerMath" type="PythonConfigurationType" factoryName="Python" temporary="true">
+  <component name="RunManager" selected="Python.focCsvViewr">
+    <configuration name="bitscopeSignalFilter" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="pythonTools" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -224,28 +272,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/encoderErrorMapper.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="csvViewr" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="pythonTools" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/focCsvViewr.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/bitscopeSignalFilter.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -296,7 +323,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="visualiser" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="focCsvViewr" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="pythonTools" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -304,11 +331,32 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$USER_HOME$/PycharmProjects/capexAnalysis" />
-      <option name="IS_MODULE_SDK" value="false" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$USER_HOME$/PycharmProjects/capexAnalysis/visualiser.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/focCsvViewr.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="focLatenencyCompensation" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="pythonTools" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/focLatenencyCompensation.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -332,19 +380,19 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.csvViewr" />
-      <item itemvalue="Python.visualiser" />
-      <item itemvalue="Python.adcIntegerMath" />
       <item itemvalue="Python.encoderMapFilter" />
       <item itemvalue="Python.encoderErrorMap" />
+      <item itemvalue="Python.focLatenencyCompensation" />
+      <item itemvalue="Python.focCsvViewr" />
+      <item itemvalue="Python.bitscopeSignalFilter" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.focCsvViewr" />
+        <item itemvalue="Python.bitscopeSignalFilter" />
         <item itemvalue="Python.encoderMapFilter" />
         <item itemvalue="Python.encoderErrorMap" />
-        <item itemvalue="Python.adcIntegerMath" />
-        <item itemvalue="Python.csvViewr" />
-        <item itemvalue="Python.visualiser" />
+        <item itemvalue="Python.focLatenencyCompensation" />
       </list>
     </recent_temporary>
   </component>
@@ -371,23 +419,23 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-408" y="-1417" width="2560" height="1417" extended-state="0" />
+    <frame x="0" y="23" width="1680" height="1027" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.49950933" visible="true" weight="0.121307604" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49950933" visible="true" weight="0.18565401" />
       <window_info auto_hide="true" id="Structure" order="1" weight="0.24931075" />
       <window_info id="Favorites" order="2" sideWeight="0.50049067" side_tool="true" weight="0.121307604" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32830188" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49790043" visible="true" weight="0.2309434" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.39914164" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49790043" visible="true" weight="0.40320855" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.31849056" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.32981133" />
       <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info anchor="bottom" id="Terminal" order="8" />
       <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.5020996" side_tool="true" weight="0.32939914" />
-      <window_info anchor="bottom" id="Python Console" order="10" />
+      <window_info anchor="bottom" id="Python Console" order="10" weight="0.32981133" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -403,8 +451,17 @@
       </breakpoints>
     </breakpoint-manager>
   </component>
+  <component name="debuggerHistoryManager">
+    <expressions id="watch">
+      <expression>
+        <expression-string>omegaMax</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+    </expressions>
+  </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/data/04log.csv">
+    <entry file="file://$PROJECT_DIR$/data/rev1logs/04log.csv">
       <provider selected="true" editor-type-id="csv-text-editor">
         <state>
           <caret selection-end-column="27" />
@@ -414,7 +471,7 @@
         <state showInfoPanel="true" fixedHeaders="false" rowLines="3" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/data/01log.csv">
+    <entry file="file://$PROJECT_DIR$/data/rev1logs/01log.csv">
       <provider selected="true" editor-type-id="csv-text-editor">
         <state>
           <caret column="27" selection-end-column="27" />
@@ -425,7 +482,7 @@
         <state showInfoPanel="true" fixedHeaders="false" rowLines="3" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/data/03log.csv">
+    <entry file="file://$PROJECT_DIR$/data/rev1logs/03log.csv">
       <provider selected="true" editor-type-id="csv-text-editor">
         <state>
           <caret column="27" selection-start-column="27" selection-end-column="27" />
@@ -435,7 +492,7 @@
         <state showInfoPanel="true" fixedHeaders="false" rowLines="3" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/data/02log.csv">
+    <entry file="file://$PROJECT_DIR$/data/rev1logs/02log.csv">
       <provider selected="true" editor-type-id="csv-text-editor">
         <state>
           <caret column="27" selection-end-line="1" />
@@ -455,7 +512,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/data/05log.csv">
+    <entry file="file://$PROJECT_DIR$/data/rev1logs/05log.csv">
       <provider selected="true" editor-type-id="csv-text-editor">
         <state>
           <caret column="27" selection-end-line="1" />
@@ -465,7 +522,7 @@
         <state showInfoPanel="true" fixedHeaders="false" rowLines="3" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/data/06log.csv">
+    <entry file="file://$PROJECT_DIR$/data/rev1logs/06log.csv">
       <provider selected="true" editor-type-id="csv-text-editor">
         <state>
           <caret column="26" selection-end-line="1" />
@@ -485,7 +542,7 @@
     <entry file="file://$PROJECT_DIR$/../../../../paragliding/PG_stats.py">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/data/08log.csv">
+    <entry file="file://$PROJECT_DIR$/data/rev1logs/08log.csv">
       <provider selected="true" editor-type-id="csv-text-editor">
         <state>
           <caret column="27" selection-start-column="27" selection-end-column="27" />
@@ -505,7 +562,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/data/09log.csv">
+    <entry file="file://$PROJECT_DIR$/data/rev1logs/09log.csv">
       <provider selected="true" editor-type-id="csv-text-editor" />
       <provider editor-type-id="csv-table-editor">
         <state showInfoPanel="true" fixedHeaders="false" rowLines="3" />
@@ -521,7 +578,7 @@
         <state showInfoPanel="true" fixedHeaders="false" rowLines="3" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/data/07log.csv">
+    <entry file="file://$PROJECT_DIR$/data/rev1logs/07log.csv">
       <provider selected="true" editor-type-id="csv-text-editor">
         <state relative-caret-position="855">
           <caret line="16385" selection-start-line="16385" selection-end-line="16385" />
@@ -531,7 +588,7 @@
         <state showInfoPanel="true" fixedHeaders="false" rowLines="3" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/data/10log.csv">
+    <entry file="file://$PROJECT_DIR$/data/rev1logs/10log.csv">
       <provider selected="true" editor-type-id="csv-text-editor">
         <state relative-caret-position="90">
           <caret line="6" column="43" selection-start-line="6" selection-start-column="43" selection-end-line="6" selection-end-column="43" />
@@ -539,16 +596,6 @@
       </provider>
       <provider editor-type-id="csv-table-editor">
         <state showInfoPanel="true" fixedHeaders="false" rowLines="3" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/focCsvViewr.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
-          <caret line="8" column="34" selection-start-line="8" selection-start-column="34" selection-end-line="8" selection-end-column="34" />
-          <folding>
-            <element signature="e#0#31#0" expanded="true" />
-          </folding>
-        </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/data/encoderMap6148Raw.csv">
@@ -584,26 +631,6 @@
         <state showInfoPanel="true" fixedHeaders="false" rowLines="3" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/data/encoderMap6148.csv">
-      <provider selected="true" editor-type-id="csv-text-editor">
-        <state relative-caret-position="510">
-          <caret line="34" column="7" selection-start-line="34" selection-start-column="7" selection-end-line="34" selection-end-column="7" />
-        </state>
-      </provider>
-      <provider editor-type-id="csv-table-editor">
-        <state showInfoPanel="true" fixedHeaders="false" rowLines="3">
-          <column index="0" width="100" />
-          <column index="1" width="100" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/intDividers.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="75">
-          <caret line="5" column="26" selection-start-line="5" selection-start-column="26" selection-end-line="5" selection-end-column="26" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/data/encoderErrorSignal6148.csv">
       <provider selected="true" editor-type-id="csv-text-editor">
         <state relative-caret-position="15">
@@ -612,16 +639,6 @@
       </provider>
       <provider editor-type-id="csv-table-editor">
         <state showInfoPanel="true" fixedHeaders="false" rowLines="3" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/encoderErrorMap.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="442">
-          <caret line="26" lean-forward="true" selection-start-line="26" selection-end-line="26" />
-          <folding>
-            <element signature="e#0#31#0" expanded="true" />
-          </folding>
-        </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/data/encoderErrorLut.csv">
@@ -641,14 +658,134 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/encoderMapFilter.py">
+    <entry file="file://$PROJECT_DIR$/data/encoderErrorLutTabs.txt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1907">
-          <caret line="108" lean-forward="true" selection-start-line="108" selection-end-line="108" />
+        <state>
+          <caret column="55" lean-forward="true" selection-start-column="55" selection-end-column="55" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/data/advanceAngle_displayError.png">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/encoderErrorMap.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="561">
+          <caret line="33" column="10" lean-forward="true" selection-start-line="33" selection-start-column="10" selection-end-line="33" selection-end-column="10" />
           <folding>
             <element signature="e#0#31#0" expanded="true" />
           </folding>
         </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/data/encoderMap6148.csv">
+      <provider selected="true" editor-type-id="csv-text-editor">
+        <state relative-caret-position="510">
+          <caret line="34" column="7" selection-start-line="34" selection-start-column="7" selection-end-line="34" selection-end-column="7" />
+        </state>
+      </provider>
+      <provider editor-type-id="csv-table-editor">
+        <state showInfoPanel="true" fixedHeaders="false" rowLines="3">
+          <column index="0" width="100" />
+          <column index="1" width="100" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/data/encoderErrorLutTest.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="465">
+          <caret line="31" column="98" lean-forward="true" selection-start-line="31" selection-start-column="98" selection-end-line="31" selection-end-column="98" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/intDividers.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="75">
+          <caret line="5" column="26" lean-forward="true" selection-start-line="5" selection-start-column="26" selection-end-line="5" selection-end-column="26" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/data/bitscope/currentA5khz.csv">
+      <provider selected="true" editor-type-id="csv-text-editor" />
+      <provider editor-type-id="csv-table-editor">
+        <state showInfoPanel="true" fixedHeaders="false" rowLines="3" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/data/bitscope/currentA10khzE.csv">
+      <provider selected="true" editor-type-id="csv-text-editor" />
+      <provider editor-type-id="csv-table-editor">
+        <state showInfoPanel="true" fixedHeaders="false" rowLines="3" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/encoderMapFilter.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="747">
+          <caret line="152" column="10" lean-forward="true" selection-start-line="19" selection-end-line="152" selection-end-column="10" />
+          <folding>
+            <element signature="e#0#31#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages/numpy/lib/function_base.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="292">
+          <caret line="485" selection-start-line="485" selection-end-line="485" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages/scipy/signal/filter_design.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="292">
+          <caret line="2366" selection-start-line="2366" selection-end-line="2366" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages/scipy/_lib/_util.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="393">
+          <caret line="274" selection-start-line="274" selection-end-line="274" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bitscopeSignalFilter.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="5">
+          <caret line="31" column="23" lean-forward="true" selection-start-line="31" selection-start-column="23" selection-end-line="31" selection-end-column="23" />
+          <folding>
+            <element signature="e#0#31#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/focLatenencyCompensation.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="15">
+          <caret line="1" column="31" lean-forward="true" selection-start-line="1" selection-start-column="31" selection-end-line="1" selection-end-column="31" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/focCsvViewr.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="225">
+          <caret line="15" column="38" lean-forward="true" selection-start-line="15" selection-start-column="38" selection-end-line="15" selection-end-column="38" />
+          <folding>
+            <element signature="e#0#31#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/data/logABC_01.csv">
+      <provider selected="true" editor-type-id="csv-text-editor">
+        <state>
+          <caret column="5" selection-start-column="5" selection-end-column="5" />
+        </state>
+      </provider>
+      <provider editor-type-id="csv-table-editor">
+        <state showInfoPanel="true" fixedHeaders="false" rowLines="3" />
       </provider>
     </entry>
   </component>

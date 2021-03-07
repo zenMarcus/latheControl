@@ -40,7 +40,7 @@ void ADC_Handler() //cascaded trigger - PWM triggers ADC which triggers a DMA dr
         //tempAngle = updateFoc();
         //divide the pwm freq to run or not the foc update, may not need this anymore
 
-        if ((interruptCount % FOCFreq == 0)){
+        if ((interruptCount % FOCCadence == 0)){
             tempAngle = updateFoc();
         }
         /*if ((interruptCount % velocityPIDFreq == 0)){
@@ -103,27 +103,28 @@ void setup_adc()
 
 //i like this way. refactor the code to work like this
 int32_t getBusVoltage()
-{
-    
+{  
     int32_t valu ;//= (busVoltRaw - settings.busVoltageBias) * settings.busVoltageScale;
     return valu;
 }
-//using floats here adds 15us
+
 int32_t getCurrentA()
 {
-    int32_t valu = ((currentARaw / float(ADC_SAMPLES-1)) * ISenseRange ) - ISenseOffset;
+    //int32_t valu = ((currentARaw / float(ADC_SAMPLES-1)) * ISenseRange ) - ISenseOffset;
+    int32_t valu = currentARaw - drvParam.currentBias;
+
     return valu;
 }
 
 int32_t getCurrentB()
 {
-    int32_t valu = ((currentBRaw / float(ADC_SAMPLES-1)) * ISenseRange ) - ISenseOffset;
+    int32_t valu = currentBRaw - drvParam.currentBias;
     return valu;
 }
 
 int32_t getCurrentC()
 {
-    int32_t valu = ((currentCRaw / float(ADC_SAMPLES-1)) * ISenseRange ) - ISenseOffset;
+    int32_t valu = currentCRaw - drvParam.currentBias;
     return valu;
 }
 

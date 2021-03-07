@@ -19,8 +19,12 @@
 //SPISettings drv8305SPISettings(1000000, MSBFIRST, SPI_MODE1);
 
 // definitions here
+uint16_t rotorAngle = 0;
+uint16_t prevRotorAngle = 0;
+int16_t motorVelocity = 0;
+
 uint16_t encoderOffset = 0;
-uint16_t FOCFreq = 4;     //foc is called every FOCFreq interrupts min is 3 beacuse of SPI encoder at the moment
+uint16_t FOCCadence = 4;     //foc is called every FOCCadence interrupts min is 3 beacuse of slow SPI
 uint16_t torquePIDFreq = PWM_FREQ / 14;
 uint16_t velocityPIDFreq = PWM_FREQ / 21;
 int16_t vectorAmp = 0;    // raw adc 0 - 4096 //patchy var to replace vectorAmplitude to int (PID will need to run on int math)
@@ -34,6 +38,8 @@ double reqMotorVelocity, velSetpoint, curMotorVelocity;
 double vKp = 0.00, 
        vKi = 0.00, 
        vKd = 0.00;
+
+struct drv8305param drvParam;
 
 AS5048A motorEncoder(CsnMot); //construct motor encoder object
 RunningAverage setSpeedAverage(10); //set speed to be sampled as running Average
@@ -72,7 +78,9 @@ String OutString = "";
 volatile bool l,h,c; //for ISR test only remove when validated
 
 uint16_t tempAngle = 0;
-String logTable[1024]; //foc debug log
+int16_t logA[1024];
+int16_t logB[1024];
+int16_t logC[1024];
 int logState = 0;
 int ilog = 0;
 
@@ -197,9 +205,15 @@ void loop() {
   //delay(3);
   
   vectorAmp = -getMotorTemp2(); //the test speed pot is wired to the temp channel 
+  
+  
+  //float displayVelocity = (motorVelocity / (4 * 180)) * 3662; // test line: convert deltaTheta in RPM
+  //Serial.println(String(displayVelocity) + ",0,50"  ); // String(rotorAngle) + ',' + 
+  
+  delay(1);
   //Serial.println(vectorAmp);
 
-  if((millis() > 4000) && (logState ==0)){
+  if((millis() > 6000) && (logState ==0)){
     Serial.println("start log");
     logState = 1;
   }
@@ -207,7 +221,11 @@ void loop() {
   if(logState == 2){
     logState = 3;
     for (int t=0; t<1024; t++){
-      Serial.println(logTable[t]);
+      Serial.println(
+        String(logA[t]) +','+
+        String(logB[t]) +','+
+        String(logC[t]) 
+      );
     }
   }
 

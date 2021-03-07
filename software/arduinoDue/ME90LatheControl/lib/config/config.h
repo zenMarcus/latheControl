@@ -66,14 +66,17 @@
 #define SINE_TABLE_SIZE 1024 //MAX_PWM_DUTY+1; //is this right?
 
 extern AS5048A motorEncoder;
-
-extern uint16_t FOCFreq; 
-extern uint16_t torquePIDFreq; 
-extern uint16_t velocityPIDFreq;
-extern int16_t vectorAmp; //this is used in the foc
+extern uint16_t rotorAngle;
+extern uint16_t prevRotorAngle;
+extern int16_t motorVelocity;
+extern uint16_t FOCCadence; 
+extern int16_t vectorAmp;           //this is used in the foc
 extern uint16_t encoderOffset;
 
-const double maxVectorAmplitude = 0.1; //this may be removed
+extern uint16_t torquePIDFreq; 
+extern uint16_t velocityPIDFreq;
+
+const double maxVectorAmplitude = 0.1; //this may be removed?
 const int motorEncResolution = 16384; //14bit encoder
 const int maxMotorVelocity = 50; //1450; //in RPM
 
@@ -90,10 +93,18 @@ extern double vKp, vKi, vKd;
 
 //debug
 extern uint16_t tempAngle;
-extern String logTable[1024];
+extern int16_t logA[1024];
+extern int16_t logB[1024];
+extern int16_t logC[1024];
+
 extern int logState;
 extern int ilog;
 
+// drv8305 paramenters
+struct drv8305param {
+    const uint16_t currentBias = 2048;  // the Shunt amp is biased to 1.65V so need shifting by half range 
+};
 
+extern drv8305param drvParam;
 #endif
 

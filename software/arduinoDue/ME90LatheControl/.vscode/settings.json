@@ -24,5 +24,6 @@
         "cstdarg": "cpp",
         "cstdio": "cpp",
         "cstdlib": "cpp"
-    }
+    },
+    "todo-tree.tree.scanMode": "workspace"
 }

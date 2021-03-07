@@ -23,7 +23,7 @@ resampledEncoder = signal.resample(df.encoder, encoderResolution)
 
 # creat a 2D array to write to .csv
 outArray = np.array([nominalEncoder, resampledEncoder])
-np.savetxt('data/encoderErrorSignal6148.csv', np.transpose(outArray), delimiter=',', fmt=['%d', '%f'])
+#np.savetxt('data/encoderErrorSignal6148.csv', np.transpose(outArray), delimiter=',', fmt=['%d', '%f'])
 
 # plot everything
 fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True)
