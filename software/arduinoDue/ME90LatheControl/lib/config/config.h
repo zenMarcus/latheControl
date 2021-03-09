@@ -92,17 +92,35 @@ extern double reqMotorVelocity, velSetpoint, curMotorVelocity;
 extern double vKp, vKi, vKd;
 
 //debug
-extern uint16_t tempAngle;
-extern int16_t logA[1024];
-extern int16_t logB[1024];
-extern int16_t logC[1024];
+extern    uint16_t tempAngle;
 
-extern int logState;
-extern int ilog;
+struct debugVars
+{
+    int16_t logA[1024];
+    int16_t logB[1024];
+    int16_t logC[1024];
+    int16_t logAlpha[1024];
+    int16_t logBeta[1024];
+    int16_t logId[1024];
+    int16_t logIq[1024];
+    int16_t logTheta[1024];
+    int logState;
+    int ilog;
+
+};
+extern debugVars logger;
+
+struct motorStatus
+{
+    int32_t Id; // direct current
+    int32_t Iq; // quadrature current
+};
+extern motorStatus motorStatus;
 
 // drv8305 paramenters
-struct drv8305param {
-    const uint16_t currentBias = 2048;  // the Shunt amp is biased to 1.65V so need shifting by half range 
+struct drv8305param
+{
+    const uint16_t currentBias = 2048 + 58;  // the Shunt amp is biased to 1.65V so need shifting by half range + a little offset on the adc
 };
 
 extern drv8305param drvParam;

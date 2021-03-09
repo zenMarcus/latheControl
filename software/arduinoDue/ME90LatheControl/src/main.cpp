@@ -29,7 +29,8 @@ uint16_t torquePIDFreq = PWM_FREQ / 14;
 uint16_t velocityPIDFreq = PWM_FREQ / 21;
 int16_t vectorAmp = 0;    // raw adc 0 - 4096 //patchy var to replace vectorAmplitude to int (PID will need to run on int math)
 // PIDs
-double reqSpindleTorque, quadratureCurrent, directCurrent,vectorAmplitude, inputCurrent;
+
+double reqSpindleTorque, quadratureCurrent, directCurrent, vectorAmplitude, inputCurrent;
 double tKp = 1.0,
        tKi = 0.00,
        tKd = 0.000;
@@ -40,6 +41,7 @@ double vKp = 0.00,
        vKd = 0.00;
 
 struct drv8305param drvParam;
+struct motorStatus motorStatus;
 
 AS5048A motorEncoder(CsnMot); //construct motor encoder object
 RunningAverage setSpeedAverage(10); //set speed to be sampled as running Average
@@ -77,13 +79,18 @@ String OutString = "";
 
 volatile bool l,h,c; //for ISR test only remove when validated
 
+struct debugVars logger;
+
 uint16_t tempAngle = 0;
+/*
 int16_t logA[1024];
 int16_t logB[1024];
 int16_t logC[1024];
+int16_t logAlpha[1024];
+int16_t logBeta[1024];
 int logState = 0;
 int ilog = 0;
-
+*/
 //----------------------------------------------------------------------------------------/
 
 
@@ -204,7 +211,7 @@ void loop() {
   //Serial.println(tempAngle);
   //delay(3);
   
-  vectorAmp = -getMotorTemp2(); //the test speed pot is wired to the temp channel 
+  vectorAmp = getMotorTemp2(); //the test speed pot is wired to the temp channel 
   
   
   //float displayVelocity = (motorVelocity / (4 * 180)) * 3662; // test line: convert deltaTheta in RPM
@@ -213,24 +220,33 @@ void loop() {
   delay(1);
   //Serial.println(vectorAmp);
 
-  if((millis() > 6000) && (logState ==0)){
+  if((millis() > 6000) && (logger.logState ==0)){
     Serial.println("start log");
-    logState = 1;
+    logger.logState = 1;
   }
 
-  if(logState == 2){
-    logState = 3;
+Serial.println(String(motorStatus.Id) +','+ String(motorStatus.Iq) + ",-512,512" );
+/*
+  if(logger.logState == 2){
+    logger.logState = 3;
+    Serial.println("a,b,c,alpha,beta,Id,Iq");
     for (int t=0; t<1024; t++){
       Serial.println(
-        String(logA[t]) +','+
-        String(logB[t]) +','+
-        String(logC[t]) 
+        String(logger.logA[t]) +','+
+        String(logger.logB[t]) +','+
+        String(logger.logC[t]) +','+
+        String(logger.logAlpha[t]) +','+
+        String(logger.logBeta[t]) +','+
+        String(logger.logId[t]) +','+
+        String(logger.logIq[t]) +','+
+        String(logger.logTheta[t])
+
       );
     }
   }
+*/
 
-
-//  delay(5);
+delay(5);
 
 
   /* reactivate this when ready to work on it

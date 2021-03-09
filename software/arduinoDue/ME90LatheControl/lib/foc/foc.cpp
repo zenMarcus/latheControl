@@ -6,6 +6,7 @@
 #include "adc.h"
 #include "interrupts.h"
 #include "linEncoder.h"
+#include "sinetable.h"
 
 int pwmSineTable[SINE_TABLE_SIZE];
 
@@ -13,7 +14,7 @@ static int phaseOffsetB = SINE_TABLE_SIZE / 3;
 static int phaseOffsetC = (SINE_TABLE_SIZE / 3) * 2;
 
 static uint16_t FOCOffset = motorEncResolution/4;
-static uint16_t sineIndexScaler = motorEncResolution / SINE_TABLE_SIZE;
+static uint16_t sineIndexScaler = motorEncResolution / SINE_TABLE_SIZE; // a scaler from the encoder value down to the corresponding index the pwm look up table
 
 // TODO remove magic numbers
 // updates the motor velocity as average of the last n (theta - prevTheta), n is a power of 2
@@ -50,23 +51,19 @@ uint16_t updateFoc(){
 
     REG_PIOD_SODR |= (0x01 << 7);   //set pin 11 high for timing
 
-    // Measuring currents and scaling them
-    int16_t IphaseA = getCurrentA();
-    int16_t IphaseB = getCurrentB();
-    int16_t IphaseC = getCurrentC();
 
-    rotorAngle = motorEncoder.getRotation();                                            //this takes 26.4us! annoying but good enough for now
-    uint16_t thetaAbs = (encoderOffset + rotorAngle) & (motorEncResolution-1);          //calc the absolute encoder angle
-    rotorAngle = (rotorAngle + _lin_encoder[thetaAbs >> 4]) & (motorEncResolution-1);   //apply the linearization map, map size is encoderRes/16 long
+    rotorAngle = motorEncoder.getRotation();                                            // this takes 26.4us! annoying but good enough for now
+    uint16_t thetaAbs = (encoderOffset + rotorAngle) & (motorEncResolution-1);          // calc the absolute encoder angle
+    rotorAngle = (rotorAngle + _lin_encoder[thetaAbs >> 4]) & (motorEncResolution-1);   // apply the linearization map, map size is encoderRes/16 long
     
     updateMotorVelocity();          // calc velocity
     prevRotorAngle = rotorAngle;    // update position for next loop
 
-    // now we do the FOC magig
-    //calculate magnetic angle
+    // now we do the FOC magic
+    // calculate magnetic angle
     magAngle = (rotorAngle * POLES) & (motorEncResolution - 1);
     
-    //calculate quadratureAngle according to the required direction (magnetic angle +- PI/2)
+    // calculate quadratureAngle according to the required direction (magnetic angle +- PI/2)
     if (vectorAmp < 0){
         qVectorAngle = (magAngle + FOCOffset) & (motorEncResolution-1);
     }
@@ -74,9 +71,8 @@ uint16_t updateFoc(){
         qVectorAngle = (magAngle - FOCOffset) & (motorEncResolution-1);
     }
 
-    //scale it in range 0-SINE_TABLE_SIZE-1
-    FOCIndex = qVectorAngle / sineIndexScaler;
-    
+    // scale it in range 0-SINE_TABLE_SIZE-1
+    FOCIndex = qVectorAngle / sineIndexScaler;    
     
     //update the pwm with appropriate duty
     int scaler = abs(vectorAmp); //just removing the sign
@@ -85,39 +81,42 @@ uint16_t updateFoc(){
              (pwmSineTable[ (FOCIndex + phaseOffsetC) & (SINE_TABLE_SIZE-1)] * scaler ) >> 12
             );
 
-    // TODO: this is going to be the next bit to work on. 
-    // the code works but shall be refactored to remove all float math
+    // update the currents (in adc counts)
+    int16_t IphaseA = getCurrentA();
+    int16_t IphaseB = getCurrentB();
+    int16_t IphaseC = getCurrentC();  // keep the reading for now but IphaseC = -IphaseA - IphaseB may work better
 
-
-    /*/ float IphaseC = -IphaseA - IphaseB;
-
-    // Clarke transform (power invariant)
-    float X = (2 * IphaseA - IphaseB - IphaseC) * 0.4082; //(1 / sqrt(6));
-    float Y = (IphaseB - IphaseC) * 0.707106; // 1/sqrt(2)
+    // Clarke transform (power invariant version) A,B,C -> alpha,beta
+    int32_t alpha = ((2 * IphaseA - IphaseB - IphaseC) * 100000l)/ 244948l;
+    int32_t beta = ((IphaseB - IphaseC) * 100000l)/ 141421l; // 37837l / 65536l = 1/sqrt(3)
     // Z = (IphaseA + IphaseB + IphaseC)*(1/sqrt(3)); //redundant
 
-    // Park transform - replace trig with LUT
-    float theta = (1 - (float(magAngle) / SINE_TABLE_SIZE)) * 6.283185307179586;    
-    float co = cos(theta);
-    float si = sin(theta);
+    // Park transform - replace magic numbers
+    int32_t si = _sin_times32768[magAngle >> 5];                    //look up the sine value
+    int32_t co = _sin_times32768[((magAngle >> 5) + 128) & 511];    //and the cosine (shifting by 1/4 of table size)
+    motorStatus.Id = (co * alpha + si * beta) >> 15;                //calculate and divide by 2^15 = 32768
+    motorStatus.Iq = (co * beta - si * alpha) >> 15;
 
-    directCurrent = co * X + si * Y;
-    quadratureCurrent = co * Y - si * X;
-    */
-    //debug logger
-    if((ilog < 1024) && (logState == 1)){
-        logA[ilog] = IphaseA;
-        logB[ilog] = IphaseB;
-        logC[ilog] = IphaseC;
-        ilog++;
+    //store the current values for debug in the logger structure
+    if((logger.ilog < 1024) && (logger.logState == 1)){
+        logger.logA[logger.ilog] = IphaseA;
+        logger.logB[logger.ilog] = IphaseB;
+        logger.logC[logger.ilog] = IphaseC;
+        logger.logAlpha[logger.ilog] = alpha;
+        logger.logBeta[logger.ilog] = beta;
+        logger.logId[logger.ilog] = motorStatus.Id;
+        logger.logIq[logger.ilog] = motorStatus.Iq;
+        logger.logTheta[logger.ilog] = magAngle;
+        logger.ilog++;
     }
-    if((ilog >= 1023) && (logState == 1)){ 
-        logState = 2;
+    if((logger.ilog >= 1023) && (logger.logState == 1)){ 
+        logger.logState = 2;
     }
-    
     REG_PIOD_CODR |= (0x01 << 7); //pin 11 low for timing
+
     return rotorAngle;
 }
+
 // TODO: need to join align rotor and map encoder with a switch
 // align magnetic field and record encoder pos for FOC !! still with floats !!
 uint16_t alignRotor(){

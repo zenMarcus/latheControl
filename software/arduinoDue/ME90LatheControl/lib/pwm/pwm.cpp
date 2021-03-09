@@ -47,7 +47,7 @@ void setup_pwm()
 
     //Configure PWM hardware comparison unit to trigger while counting up and at the max duty value
     int compMode = PWM_CMPM_CEN; //+ PWM_CMPM_CTR(0) + PWM_CMPM_CPR(0) + PWM_CMPM_CUPR(0);
-    PWMC_ConfigureComparisonUnit(PWM_INTERFACE, 0, MAX_PWM_DUTY, compMode);
+    PWMC_ConfigureComparisonUnit(PWM_INTERFACE, 0, MAX_PWM_DUTY-20, compMode); //removed 20ticks to allow 21khz pwm, the adc needs to start a little befor the center
     //Use comparison unit 0 for Event line 0 which the ADC hardware is looking for triggers on
     PWMC_ConfigureEventLineMode(PWM_INTERFACE, 0, PWM_ELMR_CSEL0);
 
