@@ -22,8 +22,8 @@
 uint16_t rotorAngle = 0;
 uint16_t prevRotorAngle = 0;
 int16_t motorVelocity = 0;
-
 uint16_t encoderOffset = 0;
+
 uint16_t FOCCadence = 4;     //foc is called every FOCCadence interrupts min is 3 beacuse of slow SPI
 uint16_t torquePIDFreq = PWM_FREQ / 14;
 uint16_t velocityPIDFreq = PWM_FREQ / 21;
@@ -41,7 +41,7 @@ double vKp = 0.00,
        vKd = 0.00;
 
 struct drv8305param drvParam;
-struct motorStatus motorStatus;
+struct controlStatus controlStatus;
 
 AS5048A motorEncoder(CsnMot); //construct motor encoder object
 RunningAverage setSpeedAverage(10); //set speed to be sampled as running Average
@@ -51,7 +51,6 @@ RunningAverage TH1Average(5); //set speed to be sampled as running Average
 
 //uC  
 bool toggle = 0; //for loop timing measure
-
 
 //PID torquePID(input(Isens 0.0 : 15.0 A) , output (0.0 : 1.0 ), setpoint (0.0A - 5.0A))
 PID torquePID(&inputCurrent, &vectorAmplitude, &reqSpindleTorque, tKp, tKi, tKd, DIRECT);
@@ -64,10 +63,6 @@ bool motorOverheat = 0;
 bool rotorAligned = 0;
 volatile bool eStopStatus;
 float motorTemperature = 0;
-
-// unused
-// const int pwmFreq = 32000; //in Hz
-// word test = 0;
 
 //spindle
 bool spindleDirection = 1;  // 1 = conventional lathe FWD
@@ -137,7 +132,7 @@ void startSpindle (){
   */
   if (eStopStatus == 1){
     // digitalWrite(ENGate, HIGH);
-    // should i add a velocity ramp up? y[0,1] = 3x^2 - 2x^3
+    // should i add a velocity ramp up? y[0,1] = 3x^4 - 2x^3
     //torquePID.SetMode(AUTOMATIC);
     //velocityPID.SetMode(AUTOMATIC);
     //Serial.println("ready to GO!");
@@ -193,7 +188,7 @@ void setup() {
   }
   */
 
-
+  logger.logState=0;
 
   torquePID.SetMode(MANUAL);
   torquePID.SetTunings(tKp, tKi, tKd);
@@ -211,8 +206,8 @@ void loop() {
   //Serial.println(tempAngle);
   //delay(3);
   
-  vectorAmp = getMotorTemp2(); //the test speed pot is wired to the temp channel 
-  
+  //TODO Refactor vectorAmp to IqSetpoint
+  vectorAmp = -getMotorTemp2();     // the test speed pot is wired to the temp channel 
   
   //float displayVelocity = (motorVelocity / (4 * 180)) * 3662; // test line: convert deltaTheta in RPM
   //Serial.println(String(displayVelocity) + ",0,50"  ); // String(rotorAngle) + ',' + 
@@ -225,7 +220,7 @@ void loop() {
     logger.logState = 1;
   }
 
-Serial.println(String(motorStatus.Id) +','+ String(motorStatus.Iq) + ",-512,512" );
+Serial.println(String(controlStatus.Id) +','+ String(controlStatus.Iq) + ",-512,512" );
 /*
   if(logger.logState == 2){
     logger.logState = 3;
@@ -254,7 +249,7 @@ delay(5);
     startSpindle();
   }
   else{
-    // stopSpindle() should i add a velocity ramp down? y[0,1] =1 - (3x^2 - 2x^3)
+    // stopSpindle() should i add a velocity ramp down? y[0,1] =1 - (3x^4 - 2x^3)
     torquePID.SetMode(MANUAL);
     velocityPID.SetMode(MANUAL);
   }

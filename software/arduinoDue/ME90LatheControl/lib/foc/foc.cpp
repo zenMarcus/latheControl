@@ -10,19 +10,22 @@
 
 int pwmSineTable[SINE_TABLE_SIZE];
 
-static int phaseOffsetB = SINE_TABLE_SIZE / 3;
-static int phaseOffsetC = (SINE_TABLE_SIZE / 3) * 2;
+// the motor seem to be wired backwards so offsets are negative here
+// this makes little or no difference but helps to validate the FOC vs the analytical model
+static int phaseOffsetB = -SINE_TABLE_SIZE / 3;
+static int phaseOffsetC = -(SINE_TABLE_SIZE / 3) * 2;
 
 static uint16_t FOCOffset = motorEncResolution/4;
 static uint16_t sineIndexScaler = motorEncResolution / SINE_TABLE_SIZE; // a scaler from the encoder value down to the corresponding index the pwm look up table
+
 
 // TODO remove magic numbers
 // updates the motor velocity as average of the last n (theta - prevTheta), n is a power of 2
 // the idea is to avoid dividing as it's slow and quantized (integers), use deltaTheta as a proxy for velocity
 // this may not work on the spindle encoder, it may neet to read position every n interrupts
 void updateMotorVelocity(){
-    const uint8_t power = 2;                           // the exponent of our power of 2 
-    const uint8_t samples = 2 << power;                // forces the samples to be a power of 2
+    const uint8_t power = 2;                            // the exponent of our power of 2 
+    const uint8_t samples = 2 << power;                 // forces the samples to be a power of 2
     static int16_t deltaThetaBuf[samples];              // define a buffer to average, no need to be circular
     static uint8_t i = 0;                               // just a counter to mange the buffer
     int16_t deltaTheta = rotorAngle - prevRotorAngle;   // theta is just the common name for the angular position
@@ -56,8 +59,8 @@ uint16_t updateFoc(){
     uint16_t thetaAbs = (encoderOffset + rotorAngle) & (motorEncResolution-1);          // calc the absolute encoder angle
     rotorAngle = (rotorAngle + _lin_encoder[thetaAbs >> 4]) & (motorEncResolution-1);   // apply the linearization map, map size is encoderRes/16 long
     
-    updateMotorVelocity();          // calc velocity
-    prevRotorAngle = rotorAngle;    // update position for next loop
+    updateMotorVelocity();          // TODO change to electrical velocity
+    prevRotorAngle = rotorAngle;    // update position for next loop vel calc
 
     // now we do the FOC magic
     // calculate magnetic angle
@@ -86,16 +89,35 @@ uint16_t updateFoc(){
     int16_t IphaseB = getCurrentB();
     int16_t IphaseC = getCurrentC();  // keep the reading for now but IphaseC = -IphaseA - IphaseB may work better
 
-    // Clarke transform (power invariant version) A,B,C -> alpha,beta
-    int32_t alpha = ((2 * IphaseA - IphaseB - IphaseC) * 100000l)/ 244948l;
-    int32_t beta = ((IphaseB - IphaseC) * 100000l)/ 141421l; // 37837l / 65536l = 1/sqrt(3)
-    // Z = (IphaseA + IphaseB + IphaseC)*(1/sqrt(3)); //redundant
+    // TODO try if filtered signals work better
+    // biased finite filter, the currents are pretty noisy
+    //controlStatus.Ia = ((3 * controlStatus.Ia) + IphaseA) >> 2;
+    //controlStatus.Ib = ((3 * controlStatus.Ib) + IphaseB) >> 2;
+    //controlStatus.Ic = ((3 * controlStatus.Ic) + IphaseC) >> 2;
 
-    // Park transform - replace magic numbers
-    int32_t si = _sin_times32768[magAngle >> 5];                    //look up the sine value
-    int32_t co = _sin_times32768[((magAngle >> 5) + 128) & 511];    //and the cosine (shifting by 1/4 of table size)
-    motorStatus.Id = (co * alpha + si * beta) >> 15;                //calculate and divide by 2^15 = 32768
-    motorStatus.Iq = (co * beta - si * alpha) >> 15;
+    // TODO Clarke transform (power invariant version) A,B,C -> alpha,beta
+    // Ia = sin(magAngle + pi/2) rather than sin(magAngle) it may be due to the open loop FOC setup above... we'll see
+    // Id - Iq and alpha - beta seem exchanged with each other, don't trying to fix this now
+    int32_t alpha = IphaseA;//((2 * IphaseA - IphaseB - IphaseC) * 100000l)/ 244948l;
+    int32_t beta = ((IphaseB - IphaseC) * 37837l )/ 65536l; // 37837l / 65536l = 1/sqrt(3)
+    // gamma = (IphaseA + IphaseB + IphaseC)*(1/sqrt(3)); //redundant
+
+    // Park transform - from alpha,beta to Id,Iq replace 511, 128 magic numbers
+    int32_t si = _sin_times32768[magAngle >> 5];                    //look up the sine value in a 512 table so scale down by 32
+    int32_t co = _sin_times32768[((magAngle >> 5) + 128) & 511];    //and the cosine value (shifting by 1/4 of table size)
+    // using a 2 sample finite filter
+    controlStatus.Id =((controlStatus.Id + (co * alpha + si * beta)) >> 15) >>1;              //calculate and divide by 2^15 = 32768
+    controlStatus.Iq =((controlStatus.Id + (co * beta - si * alpha)) >> 15) >>1;
+
+    controlStatus.IdDes = 0; // always zero until we'll be looking to do field weakening
+    if (controlStatus.inReverse) controlStatus.IqDes = -vectorAmp;
+    else controlStatus.IqDes = vectorAmp;    
+
+    //TODO get on with the PIDs now!
+
+
+
+
 
     //store the current values for debug in the logger structure
     if((logger.ilog < 1024) && (logger.logState == 1)){
@@ -104,8 +126,8 @@ uint16_t updateFoc(){
         logger.logC[logger.ilog] = IphaseC;
         logger.logAlpha[logger.ilog] = alpha;
         logger.logBeta[logger.ilog] = beta;
-        logger.logId[logger.ilog] = motorStatus.Id;
-        logger.logIq[logger.ilog] = motorStatus.Iq;
+        logger.logId[logger.ilog] = controlStatus.Id;
+        logger.logIq[logger.ilog] = controlStatus.Iq;
         logger.logTheta[logger.ilog] = magAngle;
         logger.ilog++;
     }

@@ -110,12 +110,20 @@ struct debugVars
 };
 extern debugVars logger;
 
-struct motorStatus
+struct controlStatus
 {
-    int32_t Id; // direct current
-    int32_t Iq; // quadrature current
+    int16_t Ia;     // current a
+    int16_t Ib;     // current b
+    int16_t Ic;     // current c
+    int32_t Id;     // direct current
+    int32_t Iq;     // quadrature current
+    int16_t IdDes;  // desired Id
+    int16_t IqDes;  // desired Iq
+    int16_t Vd;     // direct voltage
+    int16_t Vq;     // quadrature voltage
+    bool inReverse;  // true = reverse
 };
-extern motorStatus motorStatus;
+extern controlStatus controlStatus;
 
 // drv8305 paramenters
 struct drv8305param
