@@ -69,12 +69,10 @@ extern AS5048A motorEncoder;
 extern uint16_t rotorAngle;
 extern uint16_t prevRotorAngle;
 extern int16_t motorVelocity;
-extern uint16_t FOCCadence; 
+extern uint8_t FOCCadence;
+extern uint8_t velPidCadence;
 extern int16_t vectorAmp;           //this is used in the foc
 extern uint16_t encoderOffset;
-
-extern uint16_t torquePIDFreq; 
-extern uint16_t velocityPIDFreq;
 
 const double maxVectorAmplitude = 0.1; //this may be removed?
 const int motorEncResolution = 16384; //14bit encoder
@@ -83,16 +81,9 @@ const int maxMotorVelocity = 50; //1450; //in RPM
 const int ISenseRange = 40; // -20A - 0A - 20A mapped to 0.00V - 1.65V -3.33V
 const int ISenseOffset = 20;// to shift the ADC value as above
 
-
-// PIDs
-extern double reqSpindleTorque, quadratureCurrent, directCurrent,vectorAmplitude, inputCurrent;
-extern double tKp, tKi, tKd;
-
-extern double reqMotorVelocity, velSetpoint, curMotorVelocity;
-extern double vKp, vKi, vKd;
-
 //debug
-extern    uint16_t tempAngle;
+extern uint16_t tempAngle;
+extern uint16_t vPidOutput;
 
 struct debugVars
 {
@@ -104,6 +95,8 @@ struct debugVars
     int16_t logId[1024];
     int16_t logIq[1024];
     int16_t logTheta[1024];
+    int16_t logVd[1024];
+    int16_t logVq[1024];
     int logState;
     int ilog;
 
@@ -112,16 +105,19 @@ extern debugVars logger;
 
 struct controlStatus
 {
-    int16_t Ia;     // current a
-    int16_t Ib;     // current b
-    int16_t Ic;     // current c
-    int32_t Id;     // direct current
-    int32_t Iq;     // quadrature current
-    int16_t IdDes;  // desired Id
-    int16_t IqDes;  // desired Iq
-    int16_t Vd;     // direct voltage
-    int16_t Vq;     // quadrature voltage
-    bool inReverse;  // true = reverse
+    uint16_t theta;     // the electrical angle
+    int16_t Ia;         // current a
+    int16_t Ib;         // current b
+    int16_t Ic;         // current c
+    int32_t Id;         // direct current
+    int32_t Iq;         // quadrature current
+    int32_t IdRef;      // reference Id
+    int32_t IqRef;      // reference Iq
+    int32_t Vd;         // direct voltage
+    int32_t Vq;         // quadrature voltage
+    int32_t velRef;     // motor velocity reference
+    int32_t velElec;    // motor velocity, electrical
+    bool inReverse;     // true = reverse
 };
 extern controlStatus controlStatus;
 
@@ -129,6 +125,12 @@ extern controlStatus controlStatus;
 struct drv8305param
 {
     const uint16_t currentBias = 2048 + 58;  // the Shunt amp is biased to 1.65V so need shifting by half range + a little offset on the adc
+    int32_t pid_KP; // scaled up by 4096
+    int32_t pid_KI;
+    int32_t pid_KD;
+    int32_t velPid_KP;
+    int32_t velPid_KI;
+    int32_t velPid_KD;
 };
 
 extern drv8305param drvParam;

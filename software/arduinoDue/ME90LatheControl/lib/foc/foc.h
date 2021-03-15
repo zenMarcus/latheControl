@@ -12,4 +12,5 @@ void fillSineTable();
 void updateMotorVelocity();
 
 uint16_t updateFoc();
+void setupFoc();
 #endif
