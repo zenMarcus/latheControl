@@ -19,13 +19,12 @@
 //SPISettings drv8305SPISettings(1000000, MSBFIRST, SPI_MODE1);
 
 // definitions here
-uint16_t rotorAngle = 0;
-uint16_t prevRotorAngle = 0;
+//uint16_t rotorAngle = 0;
 int16_t motorVelocity = 0;
 uint16_t encoderOffset = 0;
 
 uint8_t FOCCadence = 4;   // foc is called every FOCCadence interrupts min is 3 beacuse of slow SPI
-uint8_t velPidCadence = 2;// velocity pid is called every N Foc interrupts
+uint8_t velPidCadence = 3;// velocity pid is called every N Foc interrupts
 int16_t vectorAmp = 0;    // raw adc 0 - 4096 //patchy var to replace vectorAmplitude to int (PID will need to run on int math)
 
 struct drv8305param drvParam;
@@ -116,13 +115,13 @@ void setup() {
 
   SPI.begin();
 
-  drvParam.pid_KP = 2500;
-  drvParam.pid_KI = 10;
+  drvParam.pid_KP = 2000;
+  drvParam.pid_KI = 6; //15
   drvParam.pid_KD = 0;
 
-  drvParam.velPid_KP = 30000;
-  drvParam.velPid_KI = 100;
-  drvParam.velPid_KD = 0;
+  drvParam.velPid_KP = 28000;
+  drvParam.velPid_KI = 500; 
+  drvParam.velPid_KD = 500;
 
   // initialize the spindle motor drive
   delay(100);
@@ -148,9 +147,24 @@ void setup() {
   setupFoc();
   //this will start the PWM interrupts
   setup_adc();
-  controlStatus.inReverse = false; //keep it ther till it works
 
   //TODO add zero current average and bias, they are static for now
+  // test version of a startup current bias on the ADC channels for current
+  for (int i=0;i<128;i++)
+  {
+    drvParam.adcCurrentBiasA += getCurrentA();
+    drvParam.adcCurrentBiasB += getCurrentB();
+    drvParam.adcCurrentBiasC += getCurrentC();
+  }
+  drvParam.adcCurrentBiasA /=128;
+  drvParam.adcCurrentBiasB /=128;
+  drvParam.adcCurrentBiasC /=128;
+  Serial.println("current A bias = " + String(drvParam.adcCurrentBiasA));
+  Serial.println("current B bias = " + String(drvParam.adcCurrentBiasB));
+  Serial.println("current C bias = " + String(drvParam.adcCurrentBiasC));
+
+  controlStatus.inReverse = false; //keep it ther till it works
+
   
   /*
   if (digitalRead(RUN_PIN == 0)){ // reads eStopStatus only if the RUN is disabled
@@ -180,13 +194,12 @@ void loop() {
     logger.logState = 1;
   }
 
-Serial.println(
-               //String(controlStatus.Id) +','+ 
+Serial.println(String(controlStatus.Id) +','+ 
                String(controlStatus.Iq) +','+ 
                String(controlStatus.IqRef) +','+ 
-               String(controlStatus.velRef) +','+
-               String(controlStatus.velElec) 
-               //String(controlStatus.Vd) +','+
+               String(10*controlStatus.velMec) +','+
+               String(10*controlStatus.velRef)  //+','+
+               //String(controlStatus.Ia) //+','+
                //String(controlStatus.Vq)
               );// + ",-512,512" );
 /*

@@ -112,20 +112,20 @@ int32_t getBusVoltage()
 int32_t getCurrentA()
 {
     //int32_t valu = ((currentARaw / float(ADC_SAMPLES-1)) * ISenseRange ) - ISenseOffset;
-    int32_t valu = currentARaw - drvParam.currentBias;
+    int32_t valu = currentARaw - drvParam.currentBias - drvParam.adcCurrentBiasA;
 
     return valu;
 }
 
 int32_t getCurrentB()
 {
-    int32_t valu = currentBRaw - drvParam.currentBias;
+    int32_t valu = currentBRaw - drvParam.currentBias - drvParam.adcCurrentBiasB;
     return valu;
 }
 
 int32_t getCurrentC()
 {
-    int32_t valu = currentCRaw - drvParam.currentBias;
+    int32_t valu = currentCRaw - drvParam.currentBias -drvParam.adcCurrentBiasC;
     return valu;
 }
 

@@ -18,6 +18,7 @@ static int phaseOffsetC = -(SINE_TABLE_SIZE / 3) * 2;
 
 static uint16_t FOCOffset = motorEncResolution/4;
 static uint16_t sineIndexScaler = motorEncResolution / SINE_TABLE_SIZE; // a scaler from the encoder value down to the corresponding index the pwm look up table
+uint16_t prevETheta = 0;
 
 int32_t PWMA, PWMB, PWMC;
 int32_t Vd, Vq;
@@ -31,51 +32,43 @@ PID qPID(0, 0, 0);
 PID dPID(0, 0, 0);
 PID vPID(0, 0, 0);
 
-// TODO remove magic numbers
 // updates the motor velocity as average of the last n (theta - prevTheta), n is a power of 2
 // the idea is to avoid dividing as it's slow and quantized (integers), use deltaTheta as a proxy for velocity
-// this may not work on the spindle encoder, it may neet to read position every n interrupts
+// knowing that the deltaTime is constant we can calculate the RPM velocity only where needed, outside of an interrupt
+// this may not work on the spindle encoder, it may need to read position every n interrupts
 void updateMotorVelocity(){
-    const uint8_t power = 1;                            // the exponent of our power of 2 
-    const uint8_t samples = 2 << power;                 // forces the samples to be a power of 2
-    static int16_t deltaThetaBuf[samples];              // define a buffer to average, no need to be circular
-    static uint8_t i = 0;                               // just a counter to mange the buffer
-    int16_t deltaTheta = rotorAngle - prevRotorAngle;   // theta is just the common name for the angular position
+    int16_t deltaTheta = controlStatus.eTheta - prevETheta;   // theta is just the common name for the angular position
 
     if (abs(deltaTheta) < (motorEncResolution >> 2)){   // this means there was no wrap around
-        deltaThetaBuf[i] = deltaTheta;                  // straight in the buffer
+        motorVelocity = deltaTheta;                     // straight difference
     
     } else if( deltaTheta < 0){                         // if there was a wrap around we need to know the rotation direction to calc deltaTheta
-            deltaThetaBuf[i] = rotorAngle + (motorEncResolution - prevRotorAngle);
+            motorVelocity = controlStatus.eTheta + (motorEncResolution - prevETheta);
     } else{
-            deltaThetaBuf[i] = (motorEncResolution - rotorAngle) + prevRotorAngle;
+            motorVelocity = (motorEncResolution - controlStatus.eTheta) + prevETheta;
     }
-
-    i++;
-    i = i & (samples-1);                                // increment counter and wrap around
-    for(uint8_t j=0;j<samples;j++){                     // calc sum of buffer
-        motorVelocity = motorVelocity + deltaThetaBuf[j];
-    }
-    motorVelocity = motorVelocity >> power;             // and average it, here you get why we like a power of 2
+    if(motorVelocity > -15 && motorVelocity < 15) motorVelocity = 0; //brutal quantization filter 
+    controlStatus.velElec = (( controlStatus.velElec) + motorVelocity) >> 1;
+    controlStatus.velMec = ((3 * controlStatus.velElec + controlStatus.velElec)>>2)  / POLES;
+    if(controlStatus.velMec > -4 && controlStatus.velMec < 4) controlStatus.velMec = 0; //brutal quantization filter 
 }
 
 void setupFoc()
 {
+    // TODO these max and min limits are for testing. Find out the real ones! 
     qPID.setCoeffs(drvParam.pid_KP, drvParam.pid_KI, drvParam.pid_KD);
-    qPID.setMinValue(-400);
-    qPID.setMaxValue(400); //max PWM duty cycle
+    qPID.setMinValue(-750);
+    qPID.setMaxValue(750); //max PWM duty cycle
 
     dPID.setCoeffs(drvParam.pid_KP, drvParam.pid_KI, drvParam.pid_KD);
-    dPID.setMinValue(-400);
-    dPID.setMaxValue(400); //max PWM duty cycle
+    dPID.setMinValue(-750);
+    dPID.setMaxValue(750); //max PWM duty cycle
 
     vPID.setCoeffs(drvParam.velPid_KP, drvParam.velPid_KI, drvParam.velPid_KD);
-    vPID.setMinValue(-350);
-    vPID.setMaxValue(350); //max refIq
+    vPID.setMinValue(-750);
+    vPID.setMaxValue(750); //max refIq
     
     refIQ = 0;
-
-    // focCounter = 0; // not sure how/if this is used
 
     controlStatus.IdRef = 0;
     controlStatus.IqRef = 0;
@@ -83,107 +76,88 @@ void setupFoc()
 }
 
 uint16_t updateFoc(){
-    uint16_t FOCIndex;
-    uint16_t qVectorAngle;
-    uint16_t magAngle;
+
+    //uint16_t controlStatus.eTheta;
 
     REG_PIOD_SODR |= (0x01 << 7);   //set pin 11 high for timing
-    //TODO Refactor vectorAmp to IqSetpoint
+    //TODO Refactor vectorAmp to velocity reference and test for reverse operation
     vectorAmp = getMotorTemp2();     // the test speed pot is wired to the temp channel 
 
-    rotorAngle = motorEncoder.getRotation();                                            // this takes 26.4us! annoying but good enough for now
-    uint16_t thetaAbs = (encoderOffset + rotorAngle) & (motorEncResolution-1);          // calc the absolute encoder angle
-    rotorAngle = (rotorAngle + _lin_encoder[thetaAbs >> 4]) & (motorEncResolution-1);   // apply the linearization map, map size is encoderRes/16 long
+    controlStatus.mTheta = motorEncoder.getRotation();                                            // this takes 26.4us! annoying but good enough for now
     
-    updateMotorVelocity();          // TODO change to electrical velocity
-    prevRotorAngle = rotorAngle;    // update position for next loop vel calc
-    controlStatus.velElec = motorVelocity;
+    // linearize the encoder postion
+    uint16_t thetaAbs = (controlStatus.mTheta) & (motorEncResolution-1);          // calc the absolute encoder angle
+    controlStatus.mTheta = (controlStatus.mTheta + _lin_encoder[thetaAbs >> 4]) & (motorEncResolution-1);   // apply the linearization map, map size is encoderRes/16 long
+    
+    // calculate magnetic angle
+    controlStatus.eTheta = (controlStatus.mTheta * POLES) & (motorEncResolution - 1);
+    
+    // update the velocities 
+    updateMotorVelocity();
+    prevETheta = controlStatus.eTheta;    // update position for next loop vel calc
 
     // now we do the FOC magic
-    // calculate magnetic angle
-    magAngle = (rotorAngle * POLES) & (motorEncResolution - 1);
-    
-    // calculate quadratureAngle according to the required direction (magnetic angle +- PI/2)
-    if (vectorAmp < 0){
-        qVectorAngle = (magAngle + FOCOffset) & (motorEncResolution-1);
-    }
-    else{
-        qVectorAngle = (magAngle - FOCOffset) & (motorEncResolution-1);
-    }
 
-    // scale it in range 0-SINE_TABLE_SIZE-1
-    FOCIndex = qVectorAngle / sineIndexScaler;    
-    
-    //update the pwm with appropriate duty
-    // int scaler = abs(vectorAmp); //just removing the sign
-    // updatePWM((pwmSineTable[ FOCIndex & (SINE_TABLE_SIZE-1) ] * scaler) >> 12, // x >> 12 =  x / (2^12) = x / ADC_RES (but is faster and less readable)
-    //          (pwmSineTable[ (FOCIndex + phaseOffsetB) & (SINE_TABLE_SIZE-1)] * scaler ) >> 12,
-    //          (pwmSineTable[ (FOCIndex + phaseOffsetC) & (SINE_TABLE_SIZE-1)] * scaler ) >> 12
-    //         );
-
-    // update the currents (in adc counts)
+    // update the currents (all is kept in adc counts so real values depend on shunt amps.)
     int16_t IphaseA = getCurrentA();
     int16_t IphaseB = getCurrentB();
     int16_t IphaseC = getCurrentC();  // keep the reading for now but IphaseC = -IphaseA - IphaseB may work better
 
-    // TODO try if filtered signals work better
-    // biased finite filter, the currents are pretty noisy
-    //controlStatus.Ia = ((3 * controlStatus.Ia) + IphaseA) >> 2;
-    //controlStatus.Ib = ((3 * controlStatus.Ib) + IphaseB) >> 2;
-    //controlStatus.Ic = ((3 * controlStatus.Ic) + IphaseC) >> 2;
+    // previus biased finite filter, the currents are pretty noisy, these are only for info anyways
+    controlStatus.Ia = ((3 * controlStatus.Ia) + IphaseA) >> 2;
+    controlStatus.Ib = ((3 * controlStatus.Ib) + IphaseB) >> 2;
+    controlStatus.Ic = ((3 * controlStatus.Ic) + IphaseC) >> 2;
 
-    // TODO Clarke transform (power invariant version) A,B,C -> alpha,beta
-    // Ia = sin(magAngle + pi/2) rather than sin(magAngle) it may be due to the open loop FOC setup above... we'll see
-    // Id - Iq and alpha - beta seem exchanged with each other, don't trying to fix this now
-    int32_t alpha = IphaseA;//((2 * IphaseA - IphaseB - IphaseC) * 100000l)/ 244948l;
+    // Clarke transform  A,B,C -> alpha,beta
+    int32_t alpha = IphaseA;
     int32_t beta = ((IphaseB - IphaseC) * 37837l )/ 65536l; // 37837l / 65536l = 1/sqrt(3)
-    // gamma = (IphaseA + IphaseB + IphaseC)*(1/sqrt(3)); //redundant
 
-    // Park transform - from alpha,beta to Id,Iq replace 511, 128 magic numbers
-    int32_t si = _sin_times32768[magAngle >> 5];                    //look up the sine value in a 512 table so scale down by 32
-    int32_t co = _sin_times32768[((magAngle >> 5) + 128) & 511];    //and the cosine value (shifting by 1/4 of table size)
-    // using a 2 sample finite filter
-    controlStatus.Id =((3*controlStatus.Id + (co * alpha + si * beta)) >> 15) >>2;              //calculate and divide by 2^15 = 32768
-    controlStatus.Iq =((3*controlStatus.Iq + (co * beta - si * alpha)) >> 15) >>2;
+    // Park transform - from alpha,beta to Id,Iq (512 is the LUT size, 128 is a Pi/2 offeset)
+    int32_t si = _sin_times32768[controlStatus.eTheta >> 5];                    //look up the sine value in a 512 table so scale down by 32
+    int32_t co = _sin_times32768[((controlStatus.eTheta >> 5) + 128) & 511];    //and the cosine value (shifting by 1/4 of table size)
+ 
+    // using a 2 sample finite filter biased to previous sample ((n-1) + n)/2 (hence the >>1)
+    controlStatus.Id =(controlStatus.Id + ((co * alpha + si * beta) >> 15)) >>1;              //calculate and divide by 2^15 = 32768
+    controlStatus.Iq =(controlStatus.Iq + ((co * beta - si * alpha) >> 15)) >>1;
 
-    controlStatus.IdRef = 0; // always zero until we'll be looking to do field weakening
-    controlStatus.velRef = (3 * controlStatus.velRef + (vectorAmp >> 2)) >>2 ; //remove when the vel pid works
-    if (controlStatus.velRef < 6 && controlStatus.velRef > -6) controlStatus.velRef=0;
-    // check if it's time to run the velocity pid
-    if ((velCount % velPidCadence == 0)){
-        vPID.setRef(controlStatus.velRef);
-        refIQ = vPID.calculatePID(controlStatus.velElec);
-    }
-    // velCount++;
-    //vPID.setRef(controlStatus.velRef);
-    //refIQ = vPID.calculatePID(controlStatus.velElec);
+    // set the references for the PIDs
+    controlStatus.velRef = (3 * controlStatus.velRef + (vectorAmp >> 5)) >> 2 ;     // TODO replace this with proper velocity POT
+    if (controlStatus.velRef > 75) controlStatus.velRef = 75;   //TODO 75 encoder counts per interrupt = 1450 rpm this should not be a magic number
+    //controlStatus.IqRef = vectorAmp >> 2; //debug line to switch to torque control
 
-    if (controlStatus.inReverse) controlStatus.IqRef = -refIQ;
-    else controlStatus.IqRef = refIQ;    
+    // calculate the velocity PID
+    vPID.setRef(controlStatus.velRef);
+    controlStatus.IqRef = vPID.calculatePID(controlStatus.velMec);
 
-    //Use PI loops to get Vd, Vq values (why use a temp variable?)
+    // TODO implement bidirectional control
+    // if (controlStatus.inReverse) controlStatus.IqRef = -refIQ;
+    // else controlStatus.IqRef = refIQ;    
+
+    // Use PI loops to get Vd, Vq values
+    // the required torque is the ouptut of velocity PID
     qPID.setRef(controlStatus.IqRef);
     Vq = qPID.calculatePID(controlStatus.Iq);
  
+    controlStatus.IdRef = 0; // always zero until we'll be looking to do field weakening (probably never for this project)
     dPID.setRef(controlStatus.IdRef);
     Vd = dPID.calculatePID(controlStatus.Id);
 
-    //Vd and Vq control PWM intensity but they could be negative now or after inverse park.
-    //This is OK though. It works out.
+    //Vd and Vq control PWM duty but they could be negative now or after inverse park.
+    //This is OK though with SVM technique, not sure about traditional PWM
     controlStatus.Vd = Vd;
     controlStatus.Vq = Vq;
 
-    //TODO may be better to approximate straight after encoder reading
-    magAngle = (magAngle + (motorVelocity >> 3)) & (motorEncResolution-1);
-    si = _sin_times32768[magAngle >> 5];                    //look up the sine value in a 512 table so scale down by 32
-    co = _sin_times32768[((magAngle >> 5) + 128) & 511];    //and the cosine value (shifting by 1/4 of table size)
+    // update the current theta based on dTheta. its divided by 8 as the code till here takes around 1/8 of the reading interval (omega = dTheta / dTime)
+    controlStatus.eTheta = (controlStatus.eTheta + (controlStatus.velElec >> 3)) & (motorEncResolution-1);
+    si = _sin_times32768[controlStatus.eTheta >> 5];                    //look up the sine value in a 512 table so scale down by 32
+    co = _sin_times32768[((controlStatus.eTheta >> 5) + 128) & 511];    //and the cosine value (shifting by 1/4 of table size = 128)
 
     //Vq and Vd above were scaled as raw PWM values [0, 1000]
-    VaScaled = Vd * co - Vq * si;
+    VaScaled = Vd * co - Vq * si; // keep VaScaled apart we'll reuse it in the next PWM calcs
     Va = VaScaled / 32768;
     Vb = (Vd * si + Vq * co) / 32768;
 
-    //Step 10 - Inverse Clarke to go from Va, Vb to phase PWMs
+    //Inverse Clarke to go from Va, Vb to phase PWMs
     PWMA = Va;    
     vbSqrt = (Vb * 56757L); //multiply by sqrt(3) * 32768
     
@@ -236,7 +210,7 @@ uint16_t updateFoc(){
         logger.logBeta[logger.ilog] = beta;
         logger.logId[logger.ilog] = controlStatus.Id;
         logger.logIq[logger.ilog] = controlStatus.Iq;
-        logger.logTheta[logger.ilog] = magAngle;
+        logger.logTheta[logger.ilog] = controlStatus.eTheta;
         logger.ilog++;
     }
     if((logger.ilog >= 1023) && (logger.logState == 1)){ 
@@ -244,7 +218,7 @@ uint16_t updateFoc(){
     }
     REG_PIOD_CODR |= (0x01 << 7); //pin 11 low for timing
 
-    return rotorAngle;
+    return controlStatus.mTheta;
 }
 
 // TODO: need to join align rotor and map encoder with a switch
@@ -253,10 +227,19 @@ uint16_t alignRotor(){
 
     Serial.println("alignign rotor");
     //ramp up the appropriate duty cycle to line up one magnetic pole
-    for(int vectorRamp=0;vectorRamp<1024;vectorRamp++){
+    // for(int vectorRamp=0;vectorRamp<512;vectorRamp++){
+    //     updatePWM((pwmSineTable[ 0 & (SINE_TABLE_SIZE-1) ] * vectorRamp) >> 12,
+    //               (pwmSineTable[ (0 + phaseOffsetB) & (SINE_TABLE_SIZE-1)] * vectorRamp ) >> 12,
+    //               (pwmSineTable[ (0 + phaseOffsetC) & (SINE_TABLE_SIZE-1)] * vectorRamp ) >> 12
+    //              );
+    //    //Serial.println(rotation); // degbug line
+    //     delay(1);
+    // }
+
+    for(int vectorRamp=0;vectorRamp<512;vectorRamp++){
         updatePWM((pwmSineTable[ 0 & (SINE_TABLE_SIZE-1) ] * vectorRamp) >> 12,
-                  (pwmSineTable[ (0 + phaseOffsetB) & (SINE_TABLE_SIZE-1)] * vectorRamp ) >> 12,
-                  (pwmSineTable[ (0 + phaseOffsetC) & (SINE_TABLE_SIZE-1)] * vectorRamp ) >> 12
+                  0,
+                  0
                  );
        //Serial.println(rotation); // degbug line
         delay(1);
@@ -267,7 +250,7 @@ uint16_t alignRotor(){
     Serial.print("pole found at absolute angle:");
     Serial.println(rotation);
     
-    motorEncoder.setZeroPosition(rotation); //set the offset to align encoder 0 to magnetic pole alignament
+    motorEncoder.setZeroPosition(rotation - ((2^14)/4)/POLES); //set the offset to align encoder 0 to magnetic pole alignament
     
     Serial.print("now set to");
     Serial.println(motorEncoder.getRotation()); //this should say 0

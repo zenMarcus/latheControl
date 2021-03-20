@@ -105,7 +105,8 @@ extern debugVars logger;
 
 struct controlStatus
 {
-    uint16_t theta;     // the electrical angle
+    uint16_t eTheta;    // the electrical angle
+    uint16_t mTheta;    // the mechanical angle
     int16_t Ia;         // current a
     int16_t Ib;         // current b
     int16_t Ic;         // current c
@@ -117,6 +118,7 @@ struct controlStatus
     int32_t Vq;         // quadrature voltage
     int32_t velRef;     // motor velocity reference
     int32_t velElec;    // motor velocity, electrical
+    int32_t velMec;      // motor mechanical velocity
     bool inReverse;     // true = reverse
 };
 extern controlStatus controlStatus;
@@ -124,7 +126,10 @@ extern controlStatus controlStatus;
 // drv8305 paramenters
 struct drv8305param
 {
-    const uint16_t currentBias = 2048 + 58;  // the Shunt amp is biased to 1.65V so need shifting by half range + a little offset on the adc
+    const uint16_t currentBias = 2048;  // the Shunt amp is biased to 1.65V so need shifting by half range + a little offset on the adc
+    int16_t adcCurrentBiasA;
+    int16_t adcCurrentBiasB;
+    int16_t adcCurrentBiasC;                 
     int32_t pid_KP; // scaled up by 4096
     int32_t pid_KI;
     int32_t pid_KD;
