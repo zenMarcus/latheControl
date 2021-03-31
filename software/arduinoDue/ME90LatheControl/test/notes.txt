@@ -1,29 +1,4 @@
-reverse engineering my own connected
-
-setup:
-    setup_pwm(), 
-    initSpindleDrv(), SPI comm is commented, just enables gates
-    call motorEncoder.init(), sets SPI mode
-    fill up the sine lookup table - Not major but this seems wrong: float (i) / (SINE_TABLE_SIZE - 1)
-    then alignRotor() - seems ok, not sure about the current surge..keep an eye
-
-    now start the internal interrupt for PWM (means FOC is running now)
-    then init the torquePID (off at the moment)
-end
-
-drv8305 does not use SPI but have SCS connected and init ??
-
-is the current reading anywhere near correct I = Iq*Id?
-
-
 ToDo:
-re instate 
-    1. Current reading
-    2. Clarke / Park Transform
-
-implement 
-    1. Current PID
-    2. Velocity PID
 
 
 

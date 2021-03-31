@@ -7,8 +7,7 @@ void pinSetup() {
   pinMode(RUN_PIN, INPUT_PULLUP);
   pinMode(DIR_PIN, INPUT_PULLUP);
   pinMode(eStop, INPUT_PULLUP);
-  pinMode(PWMx, INPUT);
-  pinMode(PWMz, INPUT);
+
   pinMode(SpnDFLAG, INPUT);
   pinMode(SpnLFLAG, INPUT);
   pinMode(SCS, OUTPUT);
@@ -40,6 +39,7 @@ void pinSetup() {
   pinMode(CsnSpn, OUTPUT);
   // digitalWrite(CsnSpn, HIGH);
 
+  // TODO check PWM pins and update/remove this
   pinMode(6, OUTPUT); // pwm
   pinMode(7, OUTPUT); // pwm
   pinMode(8, OUTPUT); // pwm

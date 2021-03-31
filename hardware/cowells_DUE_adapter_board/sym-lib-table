@@ -1,0 +1,5 @@
+(sym_lib_table
+  (lib (name cowells_DUE_adapter_board-rescue)(type Legacy)(uri ${KIPRJMOD}/cowells_DUE_adapter_board-rescue.lib)(options "")(descr ""))
+  (lib (name arduino)(type Legacy)(uri /Users/marcus/Documents/kiCadRepo/arduino-kicad-library-master/arduino.lib)(options "")(descr ""))
+  (lib (name LS7366R)(type Legacy)(uri /Users/marcus/Documents/kiCadRepo/LS7366R/LS7366R.lib)(options "")(descr ""))
+)

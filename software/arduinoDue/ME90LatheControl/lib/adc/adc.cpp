@@ -26,13 +26,13 @@ void ADC_Handler() //cascaded trigger - PWM triggers ADC which triggers a DMA dr
     int f=ADC->ADC_ISR;
     if (f & (1<<27)) { //receive counter end of buffer
 
-            currentARaw = adc_buf[0] & 0xFFF;   //A7
-            currentBRaw = adc_buf[1] & 0xFFF;   //A5
+            currentARaw = adc_buf[0] & 0xFFF;   //A7 //TODO change to A5
+            currentBRaw = adc_buf[1] & 0xFFF;   //A5 //TODO change to A7
             currentCRaw = adc_buf[2] & 0xFFF;   //A4
             busVoltRaw = adc_buf[3] & 0xFFF;    //A3
-            motorTemp2Raw = adc_buf[4] & 0xFFF; //A2
-            motorTemp1Raw = adc_buf[5] & 0xFFF; //A1
-            invTemp2Raw = adc_buf[6] & 0xFFF;   //A0
+            motorTemp2Raw = adc_buf[4] & 0xFFF; //A2  unused
+            motorTemp1Raw = adc_buf[5] & 0xFFF; //A1  unused
+            invTemp2Raw = adc_buf[6] & 0xFFF;   //A0 //TODO change to speed
 
             ADC->ADC_RPR=(uint32_t)adc_buf;   // DMA buffer
             ADC->ADC_RCR=7; //# of samples to take - in this case one sample per enabled ADC port

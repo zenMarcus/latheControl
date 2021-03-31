@@ -13,6 +13,7 @@ void setup_pwm()
     PWMC_DisableChannel(PWM_INTERFACE, 2);
 
     // Configure (PC2) through (PC7) to be PWM now. This causes all of them to be PWM channels 0, 1, 2
+    // these are pins marked 34 through 39 on arduino due
     PIOC->PIO_PDR = 0xFC;  // disable PIO control for all of them
     PIOC->PIO_IDR = 0xFC;   // disable PIO interrupts for all of them
     PIOC->PIO_ABSR |= 0xFC;  // switch to B peripheral

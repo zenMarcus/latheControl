@@ -115,8 +115,9 @@ void setup() {
 
   SPI.begin();
 
+  // set the PID constants
   drvParam.pid_KP = 2000;
-  drvParam.pid_KI = 6; //15
+  drvParam.pid_KI = 6;
   drvParam.pid_KD = 0;
 
   drvParam.velPid_KP = 28000;
@@ -136,19 +137,17 @@ void setup() {
   // call this every time for the moment, but will need to be called upon
   // request
   delay(10);
-  //rotorAligned = alignRotor();
-  //Serial.println(FOCoffset); //debug line
-  //motorEncoder.setZeroPosition(6160); //i need to find a way to store this in memory
 
   //encoderOffset = mapEncoder(); //i may need to remove the cogging torque (fft, notch filter?)
   encoderOffset = alignRotor();
   Serial.println("encoder offset = " + String(encoderOffset));
-  
+
+  // configure the PIDs
   setupFoc();
+
   //this will start the PWM interrupts
   setup_adc();
 
-  //TODO add zero current average and bias, they are static for now
   // test version of a startup current bias on the ADC channels for current
   for (int i=0;i<128;i++)
   {

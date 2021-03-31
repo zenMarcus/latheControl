@@ -3,47 +3,36 @@
 // arduino pin definition and init.
 //SPI pin
 
-//Spindle motor
-  //phase current Sensing
-  #define IsenC A0
-  #define IsenB A1
-  #define IsenA A2
-
-  //voltage sense
-  #define Vsen_PVDD A3
-  #define VsenC A4
-  #define VsenB A5
-  #define VsenA A6
-
-  //Thermistor
-  #define TH1 A10
-
+//find ADC pins for the following in ADC.cpp
+  //phase current Sensing 
+  //bus and A B phase voltage
   //Spindle Speed
-  #define spd A11
+
+  //motor Thermistor
+  #define TH1 A11
 
   //DRV8305 digital pins
-  #define SCS 26 //chip select for SPI
-  #define PWRGD 28
+  #define SCS 31     //chip select for SPI
+  #define PWRGD 29
   #define ENGate 30
-  #define nFault 32
+  #define nFault 49
 
 //encoders
   //encoder pwm signal (2mm / 14bit)
-  #define PWMx 35
-  #define PWMz 37
-  #define SpnLFLAG 45
-  #define SpnDFLAG 51
+
+  #define SpnLFLAG 44
+  #define SpnDFLAG 50
 
   //slave select for encoder counters
   #define SS_spin 33
-  #define SS_z 48
-  #define SS_x 46
+  #define SS_z 26
+  #define SS_x 24
 
   //slave select for encoder SSI? interface
-  #define CsnX 47 //(not use but needs init)
-  #define CsnZ 49 //(not use but needs init)
-  #define CsnSpn 50 //(not use but needs init)
-  #define CsnMot 31 // motor encoder chip select
+  #define CsnX 4 //(not use but needs init)
+  #define CsnZ 4 //(not use but needs init)
+  //#define CsnSpn 50 //(not use but needs init) deprecated?
+  #define CsnMot 28 // motor encoder chip select
 
 //Switches
   #define RUN_PIN 23

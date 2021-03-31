@@ -41,6 +41,7 @@
 #define ADC_CURR_LOWTHRESH	1100 //right around -453A
 #define ADC_CURR_HIGHTHRESH	2900 //right around +447A
 
+/* these are from the code i started from
 #define DRIVE_ENABLE		42
 #define ADC_TEMP1			0
 #define ADC_TEMP2			4
@@ -53,12 +54,12 @@
 #define DIN1				49
 #define DIN2				50
 #define DIN3				51
-
 #define EEPROM_PAGE			20
 
 #define CFG_BUILD_NUM		1000
 
 #define EEPROM_VER			0x15
+*/
 
 // my declarations here
 #define POLES 14
@@ -70,7 +71,7 @@ extern uint16_t rotorAngle;
 extern uint16_t prevRotorAngle;
 extern int16_t motorVelocity;
 extern uint8_t FOCCadence;
-extern uint8_t velPidCadence;
+//extern uint8_t velPidCadence;
 extern int16_t vectorAmp;           //this is used in the foc
 extern uint16_t encoderOffset;
 

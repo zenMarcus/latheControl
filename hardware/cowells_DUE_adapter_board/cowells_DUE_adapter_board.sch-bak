@@ -301,7 +301,7 @@ U 1 1 5A91E8D1
 P 3400 1950
 F 0 "J2" V 3400 2350 50  0000 C CNN
 F 1 "AS5048A" V 3300 1950 50  0000 C CNN
-F 2 "Connectors_Molex:Molex_PicoBlade_53047-0810_08x1.25mm_Straight" H 3400 1950 50  0001 C CNN
+F 2 "Pin_Headers:Pin_Header_Straight_1x08_Pitch2.54mm" H 3400 1950 50  0001 C CNN
 F 3 "http://ams.com/eng/Support/Demoboards/Magnetic-Position-Sensors/Angle-Position-On-Axis/AS5048A-Adapterboard" H 3400 1950 50  0001 C CNN
 	1    3400 1950
 	0    -1   1    0   
@@ -330,7 +330,7 @@ U 1 1 5A922496
 P 9750 2350
 F 0 "J3" V 9750 2750 50  0000 C CNN
 F 1 "spindl enc." V 9650 2350 50  0000 C CNN
-F 2 "Connectors_Molex:Molex_PicoBlade_53047-0810_08x1.25mm_Straight" H 9750 2350 50  0001 C CNN
+F 2 "Pin_Headers:Pin_Header_Straight_1x08_Pitch2.54mm" H 9750 2350 50  0001 C CNN
 F 3 "http://ams.com/eng/Support/Demoboards/Magnetic-Position-Sensors/Angle-Position-On-Axis/AS5048A-Adapterboard" H 9750 2350 50  0001 C CNN
 	1    9750 2350
 	-1   0    0    -1  
@@ -357,7 +357,7 @@ U 1 1 5A924C3B
 P 12550 2350
 F 0 "J5" V 12550 2750 50  0000 C CNN
 F 1 "AS5311AB" V 12450 2350 50  0000 C CNN
-F 2 "Connectors_Molex:Molex_PicoBlade_53047-0810_08x1.25mm_Straight" H 12550 2350 50  0001 C CNN
+F 2 "Pin_Headers:Pin_Header_Straight_1x08_Pitch2.54mm" H 12550 2350 50  0001 C CNN
 F 3 "http://ams.com/eng/Support/Demoboards/Magnetic-Position-Sensors/Angle-Position-On-Axis/AS5048A-Adapterboard" H 12550 2350 50  0001 C CNN
 	1    12550 2350
 	-1   0    0    -1  
@@ -378,7 +378,7 @@ U 1 1 5A924CC3
 P 15450 2350
 F 0 "J6" V 15450 2750 50  0000 C CNN
 F 1 "AS5311AB" V 15350 2350 50  0000 C CNN
-F 2 "Connectors_Molex:Molex_PicoBlade_53047-0810_08x1.25mm_Straight" H 15450 2350 50  0001 C CNN
+F 2 "Pin_Headers:Pin_Header_Straight_1x08_Pitch2.54mm" H 15450 2350 50  0001 C CNN
 F 3 "http://ams.com/eng/Support/Demoboards/Magnetic-Position-Sensors/Angle-Position-On-Axis/AS5048A-Adapterboard" H 15450 2350 50  0001 C CNN
 	1    15450 2350
 	-1   0    0    -1  
@@ -481,7 +481,7 @@ U 1 1 5A9380CD
 P 11050 2250
 F 0 "UX1" H 10649 2676 50  0000 L BNN
 F 1 "LS7366R" H 10650 1750 50  0000 L BNN
-F 2 "Housings_DIP:DIP-14_W7.62mm_Socket_LongPads" H 10650 1500 50  0001 L BNN
+F 2 "Housings_DIP:DIP-14_W7.62mm_LongPads" H 10650 1500 50  0001 L BNN
 F 3 "http://www.lsicsi.com/pdfs/Data_Sheets/LS7366R.pdf" H 10650 1650 50  0001 L BNN
 F 4 "LSI" H 11050 2250 50  0001 L BNN "Manufacturer"
 	1    11050 2250
@@ -493,7 +493,7 @@ U 1 1 5A9382D5
 P 13850 2250
 F 0 "UZ1" H 13449 2676 50  0000 L BNN
 F 1 "LS7366R" H 13450 1750 50  0000 L BNN
-F 2 "Housings_DIP:DIP-14_W7.62mm_Socket_LongPads" H 13450 1500 50  0001 L BNN
+F 2 "Housings_DIP:DIP-14_W7.62mm_LongPads" H 13450 1500 50  0001 L BNN
 F 3 "http://www.lsicsi.com/pdfs/Data_Sheets/LS7366R.pdf" H 13450 1650 50  0001 L BNN
 F 4 "LSI" H 13850 2250 50  0001 L BNN "Manufacturer"
 	1    13850 2250
@@ -505,7 +505,7 @@ U 1 1 5A9387A9
 P 8100 2250
 F 0 "Uspin1" H 7699 2676 50  0000 L BNN
 F 1 "LS7366R" H 7700 1750 50  0000 L BNN
-F 2 "Housings_DIP:DIP-14_W7.62mm_Socket_LongPads" H 7700 1500 50  0001 L BNN
+F 2 "Housings_DIP:DIP-14_W7.62mm_LongPads" H 7700 1500 50  0001 L BNN
 F 3 "http://www.lsicsi.com/pdfs/Data_Sheets/LS7366R.pdf" H 7700 1650 50  0001 L BNN
 F 4 "LSI" H 8100 2250 50  0001 L BNN "Manufacturer"
 	1    8100 2250
@@ -557,34 +557,34 @@ NoConn ~ 9550 2650
 $Comp
 L Device:C C6
 U 1 1 5A945D92
-P 9050 1700
-F 0 "C6" H 9075 1800 50  0000 L CNN
-F 1 "0.1uF" H 9075 1600 50  0000 L CNN
-F 2 "Capacitors_SMD:C_0805_HandSoldering" H 9088 1550 50  0001 C CNN
-F 3 "" H 9050 1700 50  0001 C CNN
-	1    9050 1700
+P 9050 1800
+F 0 "C6" H 9075 1900 50  0000 L CNN
+F 1 "0.1uF" H 9075 1700 50  0000 L CNN
+F 2 "Capacitors_SMD:C_0805_HandSoldering" H 9088 1650 50  0001 C CNN
+F 3 "" H 9050 1800 50  0001 C CNN
+	1    9050 1800
 	-1   0    0    1   
 $EndComp
 $Comp
 L Device:C C7
 U 1 1 5A945FCD
-P 12000 1700
-F 0 "C7" H 12025 1800 50  0000 L CNN
-F 1 "0.1uF" H 12025 1600 50  0000 L CNN
-F 2 "Capacitors_SMD:C_0805_HandSoldering" H 12038 1550 50  0001 C CNN
-F 3 "" H 12000 1700 50  0001 C CNN
-	1    12000 1700
+P 12000 1800
+F 0 "C7" H 12025 1900 50  0000 L CNN
+F 1 "0.1uF" H 12025 1700 50  0000 L CNN
+F 2 "Capacitors_SMD:C_0805_HandSoldering" H 12038 1650 50  0001 C CNN
+F 3 "" H 12000 1800 50  0001 C CNN
+	1    12000 1800
 	-1   0    0    1   
 $EndComp
 $Comp
 L Device:C C8
 U 1 1 5A946138
-P 14800 1700
-F 0 "C8" H 14825 1800 50  0000 L CNN
-F 1 "0.1uF" H 14825 1600 50  0000 L CNN
-F 2 "Capacitors_SMD:C_0805_HandSoldering" H 14838 1550 50  0001 C CNN
-F 3 "" H 14800 1700 50  0001 C CNN
-	1    14800 1700
+P 14800 1800
+F 0 "C8" H 14825 1900 50  0000 L CNN
+F 1 "0.1uF" H 14825 1700 50  0000 L CNN
+F 2 "Capacitors_SMD:C_0805_HandSoldering" H 14838 1650 50  0001 C CNN
+F 3 "" H 14800 1800 50  0001 C CNN
+	1    14800 1800
 	-1   0    0    1   
 $EndComp
 $Comp
@@ -776,7 +776,16 @@ Wire Wire Line
 Wire Wire Line
 	5650 2400 5500 2400
 Connection ~ 5500 2400
+Wire Wire Line
+	9050 1650 9050 950 
+Wire Wire Line
+	9050 950  12000 950 
+Wire Wire Line
+	14800 1650 14800 950 
 Connection ~ 14800 950 
+Wire Wire Line
+	12000 1650 12000 950 
+Connection ~ 12000 950 
 Wire Wire Line
 	4300 9150 4400 9150
 Wire Wire Line
@@ -874,6 +883,8 @@ Wire Wire Line
 	5500 2400 5500 2600
 Wire Wire Line
 	14800 950  15150 950 
+Wire Wire Line
+	12000 950  14800 950 
 Wire Wire Line
 	4300 9050 4300 9150
 Wire Wire Line
@@ -1143,7 +1154,7 @@ BOOSTXL-DRV8305EVM
 NoConn ~ 7000 8950
 NoConn ~ 7000 9150
 NoConn ~ 7000 9450
-NoConn ~ 9550 2450
+NoConn ~ 10250 3150
 NoConn ~ 7000 6550
 NoConn ~ 7000 9050
 NoConn ~ 7000 7650
@@ -1173,24 +1184,4 @@ Text Label 8450 3100 2    60   ~ 0
 3v3
 Wire Wire Line
 	8900 3100 8900 3300
-Wire Wire Line
-	14800 1550 14800 950 
-Wire Wire Line
-	14800 1950 14800 1850
-Connection ~ 14800 1950
-Wire Wire Line
-	12000 1950 12000 1850
-Connection ~ 12000 1950
-Wire Wire Line
-	9050 950  12000 950 
-Wire Wire Line
-	12000 1550 12000 950 
-Connection ~ 12000 950 
-Wire Wire Line
-	12000 950  14800 950 
-Wire Wire Line
-	9050 1950 9050 1850
-Connection ~ 9050 1950
-Wire Wire Line
-	9050 1550 9050 950 
 $EndSCHEMATC

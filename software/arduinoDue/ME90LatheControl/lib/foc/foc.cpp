@@ -9,15 +9,14 @@
 #include "sinetable.h"
 
 int pwmSineTable[SINE_TABLE_SIZE];
-static uint8_t velCount = 0;
 
 // the motor seem to be wired backwards so offsets are negative here
 // this makes little or no difference but helps to validate the FOC vs the analytical model
 static int phaseOffsetB = -SINE_TABLE_SIZE / 3;
 static int phaseOffsetC = -(SINE_TABLE_SIZE / 3) * 2;
 
-static uint16_t FOCOffset = motorEncResolution/4;
-static uint16_t sineIndexScaler = motorEncResolution / SINE_TABLE_SIZE; // a scaler from the encoder value down to the corresponding index the pwm look up table
+// static uint16_t FOCOffset = motorEncResolution/4;
+// static uint16_t sineIndexScaler = motorEncResolution / SINE_TABLE_SIZE; // a scaler from the encoder value down to the corresponding index the pwm look up table
 uint16_t prevETheta = 0;
 
 int32_t PWMA, PWMB, PWMC;
@@ -47,10 +46,11 @@ void updateMotorVelocity(){
     } else{
             motorVelocity = (motorEncResolution - controlStatus.eTheta) + prevETheta;
     }
-    if(motorVelocity > -15 && motorVelocity < 15) motorVelocity = 0; //brutal quantization filter 
-    controlStatus.velElec = (( controlStatus.velElec) + motorVelocity) >> 1;
+    if(motorVelocity > -15 && motorVelocity < 15) motorVelocity = 0; //TODO brutal quantization filter , do we need this
+    controlStatus.velElec = (controlStatus.velElec + motorVelocity) >> 1;
+    // calculate the mech. velocity and finite filter it to smooth it out
     controlStatus.velMec = ((3 * controlStatus.velElec + controlStatus.velElec)>>2)  / POLES;
-    if(controlStatus.velMec > -4 && controlStatus.velMec < 4) controlStatus.velMec = 0; //brutal quantization filter 
+    if(controlStatus.velMec > -4 && controlStatus.velMec < 4) controlStatus.velMec = 0; //then remove the quantization artefacts at 0 velocity 
 }
 
 void setupFoc()
@@ -58,15 +58,15 @@ void setupFoc()
     // TODO these max and min limits are for testing. Find out the real ones! 
     qPID.setCoeffs(drvParam.pid_KP, drvParam.pid_KI, drvParam.pid_KD);
     qPID.setMinValue(-750);
-    qPID.setMaxValue(750); //max PWM duty cycle
+    qPID.setMaxValue(750); //max PWM duty cycle (top at 1000)
 
     dPID.setCoeffs(drvParam.pid_KP, drvParam.pid_KI, drvParam.pid_KD);
     dPID.setMinValue(-750);
-    dPID.setMaxValue(750); //max PWM duty cycle
+    dPID.setMaxValue(750); //max PWM duty cycle (top at 1000)
 
     vPID.setCoeffs(drvParam.velPid_KP, drvParam.velPid_KI, drvParam.velPid_KD);
     vPID.setMinValue(-750);
-    vPID.setMaxValue(750); //max refIq
+    vPID.setMaxValue(750); //max refIq (in ADC counts -2048 to 2048 = -20A to 20A) //TODO, check this out on the datasheet
     
     refIQ = 0;
 
@@ -226,16 +226,7 @@ uint16_t updateFoc(){
 uint16_t alignRotor(){
 
     Serial.println("alignign rotor");
-    //ramp up the appropriate duty cycle to line up one magnetic pole
-    // for(int vectorRamp=0;vectorRamp<512;vectorRamp++){
-    //     updatePWM((pwmSineTable[ 0 & (SINE_TABLE_SIZE-1) ] * vectorRamp) >> 12,
-    //               (pwmSineTable[ (0 + phaseOffsetB) & (SINE_TABLE_SIZE-1)] * vectorRamp ) >> 12,
-    //               (pwmSineTable[ (0 + phaseOffsetC) & (SINE_TABLE_SIZE-1)] * vectorRamp ) >> 12
-    //              );
-    //    //Serial.println(rotation); // degbug line
-    //     delay(1);
-    // }
-
+    //TODO try B -> A technique
     for(int vectorRamp=0;vectorRamp<512;vectorRamp++){
         updatePWM((pwmSineTable[ 0 & (SINE_TABLE_SIZE-1) ] * vectorRamp) >> 12,
                   0,
@@ -245,19 +236,20 @@ uint16_t alignRotor(){
         delay(1);
     }
  
-    delay(1000); //give the rotor time to catch up, just in case 
+    delay(500); //give the rotor time to catch up, just in case 
     word rotation = motorEncoder.getRawRotation();
     Serial.print("pole found at absolute angle:");
     Serial.println(rotation);
     
-    motorEncoder.setZeroPosition(rotation - ((2^14)/4)/POLES); //set the offset to align encoder 0 to magnetic pole alignament
+    // set the offset to align encoder 0 to magnetic pole alignament
+    motorEncoder.setZeroPosition(rotation - ((2^14)/4)/POLES); 
     
     Serial.print("now set to");
     Serial.println(motorEncoder.getRotation()); //this should say 0
 
     // let the rotor rest
     updatePWM(0,0,0);
-    return rotation;
+    return rotation; // This should be stored as encoder offset
 
 }
 
@@ -304,6 +296,7 @@ uint16_t mapEncoder(){
 }
 
 // fills sine LUT - shifted positive and scaled to the max pwm dutycycle value 
+// currently only used for encoder mapping
 void fillSineTable (){
   for (int i=0; i < SINE_TABLE_SIZE; i++){
       float theta = float (i) / SINE_TABLE_SIZE;
